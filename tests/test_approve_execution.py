@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 
@@ -9,8 +9,8 @@ from app import dependencies
 from app.execution.base import ExecutionEngine
 from app.execution.models import ExecutionResult
 from app.main import app
-from app.pending_store import PendingRequestStore
 from app.models import PendingRequest
+from app.pending_store import PendingRequestStore
 from app.rpc_parser import MCPRequestInfo, OperationType
 
 
@@ -25,7 +25,7 @@ class MockExecutionEngine(ExecutionEngine):
 
 
 def _pending_request(nonce: str = "nonce-1") -> PendingRequest:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return PendingRequest(
         nonce=nonce,
         payload_hash="abc123",

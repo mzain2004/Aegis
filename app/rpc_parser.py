@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import json
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 from app.tool_policy import MUTATING_TOOLS, READ_ONLY_TOOLS
 
 
-class OperationType(str, Enum):
+class OperationType(StrEnum):
     READ_ONLY = "read_only"
     MUTATING = "mutating"
     UNKNOWN = "unknown"

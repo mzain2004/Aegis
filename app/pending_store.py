@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from threading import Lock
 
 from app.config import get_settings
@@ -14,7 +14,11 @@ class PendingRequestStore:
 
     def __init__(self, ttl_seconds: int | None = None) -> None:
         settings = get_settings()
-        self._ttl_seconds = ttl_seconds if ttl_seconds is not None else settings.pending_request_ttl_seconds
+        self._ttl_seconds = (
+            ttl_seconds
+            if ttl_seconds is not None
+            else settings.pending_request_ttl_seconds
+        )
         self._items: dict[str, PendingRequest] = {}
         self._lock = Lock()
 
@@ -23,7 +27,7 @@ class PendingRequestStore:
         return self._ttl_seconds
 
     def add(self, request: PendingRequest) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expires_at = now + timedelta(seconds=self._ttl_seconds)
         stored_request = request.model_copy(
             update={"created_at": now, "expires_at": expires_at}
@@ -34,7 +38,7 @@ class PendingRequestStore:
             self._items[stored_request.nonce] = stored_request
 
     def get(self, nonce: str) -> PendingRequest | None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         with self._lock:
             self._cleanup_expired_locked(now)
             return self._items.get(nonce)
@@ -44,18 +48,18 @@ class PendingRequestStore:
             self._items.pop(nonce, None)
 
     def cleanup_expired(self) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         with self._lock:
             self._cleanup_expired_locked(now)
 
     def count(self) -> int:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         with self._lock:
             self._cleanup_expired_locked(now)
             return len(self._items)
 
     def exists(self, nonce: str) -> bool:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         with self._lock:
             self._cleanup_expired_locked(now)
             return nonce in self._items

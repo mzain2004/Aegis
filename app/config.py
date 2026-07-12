@@ -10,7 +10,6 @@ and upstream forwarding behavior when those features are introduced.
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
 from urllib.parse import urlparse
 
 from pydantic import Field, field_validator
@@ -84,9 +83,7 @@ class Settings(BaseSettings):
 
         parsed = urlparse(value.strip())
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError(
-                "K8S_MCP_SERVER_URL must be a valid http or https URL"
-            )
+            raise ValueError("K8S_MCP_SERVER_URL must be a valid http or https URL")
         return value.strip()
 
     @field_validator("shared_hmac_secret")
@@ -145,9 +142,7 @@ class Settings(BaseSettings):
             raise ValueError("EXECUTION_RETRIES must be zero or greater")
         return value
 
-    mcp_timeout_seconds: int = Field(
-        default=10, validation_alias="MCP_TIMEOUT_SECONDS"
-    )
+    mcp_timeout_seconds: int = Field(default=10, validation_alias="MCP_TIMEOUT_SECONDS")
 
     @field_validator("mcp_timeout_seconds")
     @classmethod

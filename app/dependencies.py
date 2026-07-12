@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import Depends
 
-from app.config import Settings, get_settings as load_settings
-from app.forwarder import MCPForwarder
+from app.config import Settings
+from app.config import get_settings as load_settings
 from app.execution.base import ExecutionEngine
 from app.execution.factory import ExecutionFactory
+from app.forwarder import MCPForwarder
 from app.logger import get_logger as build_logger
 from app.pending_store import PendingRequestStore
 
@@ -27,7 +28,9 @@ def get_logger(name: str = "aegis") -> Any:
     return build_logger(name)
 
 
-def get_forwarder(settings: Settings = Depends(load_settings)) -> MCPForwarder:
+def get_forwarder(
+    settings: Annotated[Settings, Depends(load_settings)],
+) -> MCPForwarder:
     """Dependency that instantiates an `MCPForwarder` configured from settings.
 
     A new forwarder (and its underlying client when created) is returned for

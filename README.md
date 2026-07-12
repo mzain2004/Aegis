@@ -1,8 +1,8 @@
 # Aegis Proxy
 
-Aegis is a Zero-Trust MCP Execution Guard. This repository now contains Phases 1 through 4: a clean FastAPI foundation, transparent MCP forwarding, JSON-RPC classification, and mutating-request suspension with in-memory pending storage.
+Aegis is a Zero-Trust MCP Execution Guard. This repository now contains the migrated proxy implementation: a FastAPI foundation, transparent MCP forwarding, JSON-RPC classification, mutating-request suspension with in-memory pending storage, and an approval endpoint that replays approved requests through the execution framework.
 
-This phase intentionally does **not** implement approval handling, HMAC verification, replay protection, or business rules. Those capabilities are reserved for later phases.
+HMAC verification, replay protection, and additional business rules are reserved for later phases.
 
 ## Phase 4 Complete
 
@@ -21,7 +21,6 @@ Capabilities:
 
 Not implemented:
 
-- approval endpoint logic
 - HMAC
 - CLI approval tool
 - replay protection
@@ -85,7 +84,7 @@ The service reads the following values:
 
 - `PROXY_HOST` - bind host, default `0.0.0.0`
 - `PROXY_PORT` - bind port, default `9000`
-- `K8S_MCP_SERVER_URL` - upstream MCP endpoint placeholder, default `http://localhost:8080/mcp`
+- `K8S_MCP_SERVER_URL` - upstream MCP endpoint used by the forwarder, default `http://127.0.0.1:8000`
 - `SHARED_HMAC_SECRET` - reserved for future signature verification
 - `NONCE_TTL` - reserved nonce lifetime in seconds, default `300`
 - `LOG_LEVEL` - logging level, default `INFO`

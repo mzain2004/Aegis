@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+
 import httpx
 
-from app.forwarder import MCPForwarder
 from app.config import get_settings
+from app.forwarder import MCPForwarder
 
 
 def test_forwarder_preserves_body_and_headers() -> None:
@@ -19,17 +20,21 @@ def test_forwarder_preserves_body_and_headers() -> None:
         assert request.content == expected_body
         # Ensure headers preserved (content-type)
         assert request.headers.get("content-type") == "application/json"
-        return httpx.Response(200, content=b"{\"result\":{}}", headers={"content-type": "application/json"})
+        return httpx.Response(
+            200, content=b'{"result":{}}', headers={"content-type": "application/json"}
+        )
 
     transport = httpx.MockTransport(handler)
     client = httpx.AsyncClient(transport=transport)
 
     forwarder = MCPForwarder(settings=settings, client=client)
 
-    status, body, headers = asyncio.run(forwarder.forward(expected_body, {"content-type": "application/json"}))
+    status, body, headers = asyncio.run(
+        forwarder.forward(expected_body, {"content-type": "application/json"})
+    )
 
     assert status == 200
-    assert body == b"{\"result\":{}}"
+    assert body == b'{"result":{}}'
     assert headers.get("content-type") == "application/json"
 
 

@@ -9,12 +9,11 @@ are intentionally omitted and belong to later phases.
 from __future__ import annotations
 
 import time
-from typing import Optional, Tuple, Dict
 
 import httpx
 
+from app.config import Settings, get_settings
 from app.logger import get_logger
-from app.config import get_settings
 
 LOGGER = get_logger(__name__)
 
@@ -28,16 +27,18 @@ class MCPForwarder:
 
     def __init__(
         self,
-        settings=None,
+        settings: Settings | None = None,
         *,
-        client: Optional[httpx.AsyncClient] = None,
+        client: httpx.AsyncClient | None = None,
     ) -> None:
         self.settings = settings or get_settings()
         self._client = client
 
     async def forward(
-        self, body: bytes, headers: dict[str, str]
-    ) -> Tuple[int, bytes, Dict[str, str]]:
+        self,
+        body: bytes,
+        headers: dict[str, str],
+    ) -> tuple[int, bytes, dict[str, str]]:
         """Forward the given raw body and headers to the configured MCP server.
 
         Returns a tuple of (status_code, response_body, response_headers).
@@ -53,7 +54,9 @@ class MCPForwarder:
         start = time.monotonic()
         try:
             # Send raw bytes; do not modify the payload in any way.
-            resp = await client.post(url, content=body, headers=headers, timeout=timeout)
+            resp = await client.post(
+                url, content=body, headers=headers, timeout=timeout
+            )
             latency_ms = int((time.monotonic() - start) * 1000)
 
             LOGGER.info(
@@ -79,4 +82,3 @@ class MCPForwarder:
         finally:
             if not client_provided:
                 await client.aclose()
-

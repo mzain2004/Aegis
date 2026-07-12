@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import httpx
-import asyncio
-
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app import dependencies
 from app.config import get_settings
 from app.forwarder import MCPForwarder
-from app import dependencies
+from app.main import app
 
 
 def test_proxy_forwards_response_and_headers() -> None:
@@ -20,7 +18,11 @@ def test_proxy_forwards_response_and_headers() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         # Return the same bytes and a custom header
-        return httpx.Response(200, content=expected_body, headers={"content-type": "application/json", "x-custom": "1"})
+        return httpx.Response(
+            200,
+            content=expected_body,
+            headers={"content-type": "application/json", "x-custom": "1"},
+        )
 
     transport = httpx.MockTransport(handler)
     client_async = httpx.AsyncClient(transport=transport)
@@ -30,7 +32,11 @@ def test_proxy_forwards_response_and_headers() -> None:
     app.dependency_overrides[dependencies.get_forwarder] = lambda: forwarder
 
     with TestClient(app) as client:
-        resp = client.post("/", content=b'{"jsonrpc":"2.0","id":1,"method":"tools/list"}', headers={"content-type": "application/json"})
+        resp = client.post(
+            "/",
+            content=b'{"jsonrpc":"2.0","id":1,"method":"tools/list"}',
+            headers={"content-type": "application/json"},
+        )
         assert resp.status_code == 200
         assert resp.content == expected_body
         assert resp.headers.get("x-custom") == "1"

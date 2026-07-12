@@ -2,23 +2,26 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.responses import JSONResponse
 
 from app.dependencies import get_execution_engine, get_pending_store
+from app.execution.base import ExecutionEngine
 from app.logger import get_logger
 from app.pending_store import PendingRequestStore
-from app.execution.base import ExecutionEngine
 
 LOGGER = get_logger(__name__)
 
 router = APIRouter(prefix="/approve", tags=["approve"])
 
+
 @router.post("/")
 async def approve_entrypoint(
     request: Request,
-    pending_store: PendingRequestStore = Depends(get_pending_store),
-    execution_engine: ExecutionEngine = Depends(get_execution_engine),
+    pending_store: Annotated[PendingRequestStore, Depends(get_pending_store)],
+    execution_engine: Annotated[ExecutionEngine, Depends(get_execution_engine)],
 ) -> Response:
     """Release an approved pending request through the configured executor."""
 

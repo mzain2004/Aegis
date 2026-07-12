@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from app.config import Settings, get_settings
+from app.execution.base import ExecutionEngine
 from app.execution.exceptions import ExecutionRejected
 from app.execution.kubernetes_executor import KubernetesExecutor
-from app.execution.base import ExecutionEngine
 
 
 class ExecutionFactory:
@@ -20,4 +20,6 @@ class ExecutionFactory:
         if backend == "kubernetes":
             return KubernetesExecutor(settings=self._settings)
 
-        raise ExecutionRejected(f"Unsupported execution backend: {self._settings.execution_backend}")
+        raise ExecutionRejected(
+            f"Unsupported execution backend: {self._settings.execution_backend}"
+        )

@@ -10,7 +10,7 @@ when those concepts exist.
 from __future__ import annotations
 
 import logging
-from typing import Final
+from typing import Any, Final
 
 try:
     import structlog  # type: ignore
@@ -60,7 +60,7 @@ def configure_logging(level: str = _DEFAULT_LEVEL) -> None:
     _LOGGING_CONFIGURED = True
 
 
-def get_logger(name: str):
+def get_logger(name: str) -> Any:
     """Return a logger instance.
 
     Prefer a structlog bound logger when available, otherwise fall back to a
@@ -80,7 +80,7 @@ def get_logger(name: str):
         def __init__(self, _logger: logging.Logger) -> None:
             self._logger = _logger
 
-        def info(self, *args, **kwargs) -> None:
+        def info(self, *args: object, **kwargs: object) -> None:
             if args:
                 msg = args[0]
             else:
@@ -89,7 +89,7 @@ def get_logger(name: str):
                 msg = f"{msg} | {kwargs}"
             self._logger.info(msg)
 
-        def debug(self, *args, **kwargs) -> None:
+        def debug(self, *args: object, **kwargs: object) -> None:
             if args:
                 msg = args[0]
             else:
@@ -98,7 +98,7 @@ def get_logger(name: str):
                 msg = f"{msg} | {kwargs}"
             self._logger.debug(msg)
 
-        def warning(self, *args, **kwargs) -> None:
+        def warning(self, *args: object, **kwargs: object) -> None:
             if args:
                 msg = args[0]
             else:
@@ -107,7 +107,7 @@ def get_logger(name: str):
                 msg = f"{msg} | {kwargs}"
             self._logger.warning(msg)
 
-        def error(self, *args, **kwargs) -> None:
+        def error(self, *args: object, **kwargs: object) -> None:
             if args:
                 msg = args[0]
             else:
@@ -116,7 +116,7 @@ def get_logger(name: str):
                 msg = f"{msg} | {kwargs}"
             self._logger.error(msg)
 
-        def bind(self, **kwargs):
+        def bind(self, **kwargs: object) -> _SimpleLogger:
             # no-op for fallback; structlog adds context — phase 1 doesn't need it
             return self
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.models import PendingRequest
 from app.pending_store import PendingRequestStore
@@ -9,7 +9,7 @@ from app.rpc_parser import MCPRequestInfo, OperationType
 
 
 def _pending_request(nonce: str, expires_in_seconds: int = 300) -> PendingRequest:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return PendingRequest(
         nonce=nonce,
         payload_hash="abc123",
@@ -50,7 +50,7 @@ def test_pending_store_cleanup_removes_expired_entries() -> None:
     stored = store.get("nonce-2")
     assert stored is not None
     store._items["nonce-2"] = stored.model_copy(
-        update={"expires_at": datetime.now(timezone.utc) - timedelta(seconds=1)}
+        update={"expires_at": datetime.now(UTC) - timedelta(seconds=1)}
     )
 
     store.cleanup_expired()
