@@ -322,8 +322,8 @@ To apply the configured formatter:
 black .
 ```
 
-The repository currently has no automated CI workflow, so contributors must run
-the checks locally.
+These checks also run automatically in CI on every pull request via
+`.github/workflows/ci.yml`.
 
 ## Security Design
 
