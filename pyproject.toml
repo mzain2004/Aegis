@@ -9,11 +9,12 @@ target-version = ["py312"]
 [tool.isort]
 profile = "black"
 line_length = 88
-known_first_party = ["app", "tests"]
+known_first_party = ["app", "agent", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+asyncio_mode = "auto"
 pythonpath = ["."]
 
 [tool.mypy]
