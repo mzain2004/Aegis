@@ -97,6 +97,5 @@ class FailsafeCorrelatingExecutor(ExecutionEngine):
         return [
             event
             for event in events
-            if event.blocked
-            and (self._cgroup_id == 0 or event.cgid == self._cgroup_id)
+            if event.blocked and (self._cgroup_id == 0 or event.cgid == self._cgroup_id)
         ]
