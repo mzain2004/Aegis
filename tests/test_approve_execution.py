@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from fastapi.testclient import TestClient
 
 from app import dependencies
+from app.crypto import compute_hmac_sha256
 from app.execution.base import ExecutionEngine
 from app.execution.models import ExecutionResult
 from app.main import app
@@ -128,5 +129,33 @@ def test_failed_execution_keeps_pending_request() -> None:
         assert response.status_code == 500
         assert store.exists(pending.nonce)
         assert engine.calls == 1
+
+    app.dependency_overrides.clear()
+
+
+def test_invalid_signature_is_rejected() -> None:
+    store = PendingRequestStore(ttl_seconds=300)
+    pending = _pending_request("nonce-4")
+    store.add(pending)
+
+    engine = MockExecutionEngine(
+        ExecutionResult(status_code=200, headers={}, body=b"{}", latency_ms=1, backend="kubernetes", success=True)
+    )
+
+    app.dependency_overrides[dependencies.get_pending_store] = lambda: store
+    app.dependency_overrides[dependencies.get_execution_engine] = lambda: engine
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/approve",
+            json={
+                "nonce": pending.nonce,
+                "signature": compute_hmac_sha256("development-shared-secret", b"wrong"),
+            },
+        )
+
+        assert response.status_code == 403
+        assert store.exists(pending.nonce)
+        assert engine.calls == 0
 
     app.dependency_overrides.clear()
