@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
+
+import pytest
 
 from app.execution.failsafe_audit import FailsafeAuditReader, parse_line
 
@@ -45,6 +48,18 @@ def test_parse_non_matching_line_returns_none() -> None:
     assert parse_line("some unrelated log line") is None
     assert parse_line("[INFO] loader started") is None
     assert parse_line("[BLOCK] EXEC tgid=1 pid=1 uid=0 comm=x") is None
+
+
+def test_parse_line_malformed_truncated_and_binary_garbage_returns_none() -> None:
+    # Truncated mid-field: cut off before any "key=value" tokens exist.
+    assert parse_line("[BLOCK] EXEC    tgid=54") is None
+    # Truncated mid "key=value" token itself (trailing partial write).
+    assert parse_line("[BLOCK] EXEC    tgid=54  cgid=") is None
+    # Non-UTF8 / binary garbage bytes decoded with errors="replace", as the
+    # reader does, land as U+FFFD replacement characters with no parsable
+    # "key=value" fields -- still just an unmatched line, not a crash.
+    garbage = b"[BLOCK] EXEC \xff\xfe\x00\x01\x02\x03".decode("utf-8", errors="replace")
+    assert parse_line(garbage) is None
 
 
 def test_reader_missing_file_is_empty_not_error(tmp_path: Path) -> None:
@@ -109,3 +124,52 @@ def test_reader_restarts_on_truncation(tmp_path: Path) -> None:
     assert len(events) == 1
     assert events[0].comm == "x"
     assert new_offset == len(truncated_line)
+
+
+def test_reader_unauthorized_permission_denied_returns_empty(tmp_path: Path) -> None:
+    if os.geteuid() == 0:
+        pytest.skip("root bypasses file permission checks")
+
+    log_path = tmp_path / "mcp-failsafe.log"
+    log_path.write_text(
+        "[BLOCK] EXEC    tgid=1    pid=1    uid=0    cgid=1    "
+        "comm=x             target=/bin/x\n"
+    )
+    os.chmod(log_path, 0o000)
+    reader = FailsafeAuditReader(str(log_path))
+
+    try:
+        events, offset = reader.read_since(0)
+    finally:
+        os.chmod(log_path, 0o644)
+
+    assert events == []
+    assert offset == 0
+
+
+def test_reader_stale_offset_beyond_file_size_resets_safely(tmp_path: Path) -> None:
+    log_path = tmp_path / "mcp-failsafe.log"
+    log_path.write_text(
+        "[AUDIT] EXEC    tgid=1    pid=1    uid=0    cgid=1    "
+        "comm=first             target=/bin/first\n"
+    )
+    reader = FailsafeAuditReader(str(log_path))
+
+    # Capture an offset, then replace the log with a shorter file, as would
+    # happen if the failsafe daemon's log rotated to a new generation. The
+    # captured offset is now a stale reference well beyond the new file's
+    # size, not a valid seek position.
+    stale_offset = reader.current_offset() + 10_000
+
+    new_line = (
+        "[BLOCK] EXEC    tgid=2    pid=2    uid=0    cgid=2    "
+        "comm=second            target=/bin/second\n"
+    )
+    log_path.write_text(new_line)
+    assert stale_offset > len(new_line)
+
+    events, new_offset = reader.read_since(stale_offset)
+
+    assert len(events) == 1
+    assert events[0].comm == "second"
+    assert new_offset == len(new_line)

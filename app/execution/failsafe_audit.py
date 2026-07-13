@@ -105,22 +105,26 @@ class FailsafeAuditReader:
 
         If the file is missing, this degrades to an empty result rather than
         raising, since the failsafe's kernel enforcement is independent of
-        whether its log file happens to exist at read time. If the file has
-        shrunk since ``offset`` was captured (truncation or log rotation),
-        reading restarts from the beginning instead of seeking past the end.
+        whether its log file happens to exist at read time. The same applies
+        if the file exists but cannot be opened for reading (e.g. permission
+        denied) -- Aegis never depends on read access to this log to dispatch
+        approved requests, so a read failure here must never break dispatch.
+        If the file has shrunk since ``offset`` was captured (truncation or
+        log rotation, including a stale offset that is now beyond the current
+        file size), reading restarts from the beginning instead of seeking
+        past the end.
         """
 
         try:
             size = self._path.stat().st_size
+            start = offset if offset <= size else 0
+
+            with self._path.open("r", encoding="utf-8", errors="replace") as handle:
+                handle.seek(start)
+                content = handle.read()
+                new_offset = handle.tell()
         except OSError:
             return [], 0
-
-        start = offset if offset <= size else 0
-
-        with self._path.open("r", encoding="utf-8", errors="replace") as handle:
-            handle.seek(start)
-            content = handle.read()
-            new_offset = handle.tell()
 
         events = [
             event
