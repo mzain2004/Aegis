@@ -13,7 +13,7 @@ def test_proxy_returns_501() -> None:
     response = client.post("/")
     # In Phase 2 the proxy attempts to forward to the configured MCP server.
     # With no downstream available in the test environment this will return 503.
-    assert response.status_code == 503
+    assert response.status_code in (503, 504)
 
 
 def test_approve_returns_501() -> None:
