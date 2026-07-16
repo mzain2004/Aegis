@@ -18,6 +18,7 @@ from app import __version__
 from app.config import get_settings
 from app.dependencies import get_logger
 from app.logger import configure_logging
+from app.monitoring.tracing import TraceMiddleware
 from app.routes import routers
 
 settings = get_settings()
@@ -38,7 +39,30 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         port=settings.proxy_port,
     )
     app.state.settings = settings
+
+    # Bootstrap default operator database records
+    from app.database.bootstrap import bootstrap_database
+    from app.database.connection import SessionLocal
+    from app.database.services import CleanupService
+    from app.monitoring.cleanup_scheduler import cleanup_scheduler
+
+    try:
+        with SessionLocal() as db:
+            bootstrap_database(db)
+            # Perform startup database cleanup
+            cleanup_service = CleanupService(db)
+            results = cleanup_service.run_cleanup()
+            db.commit()
+            LOGGER.info("startup_cleanup_completed", results=results)
+    except Exception as e:
+        LOGGER.error("database_bootstrap_and_cleanup_failed", error=str(e))
+
+    # Start periodic background cleanup scheduler
+    cleanup_scheduler.start()
+
     yield
+    # Stop background cleanup scheduler on shutdown
+    await cleanup_scheduler.stop()
     LOGGER.info("aegis_stopping", service="Aegis Proxy", version=__version__)
 
 
@@ -51,6 +75,9 @@ app = FastAPI(
     openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+# Add structured trace, correlation ID, and metrics middleware
+app.add_middleware(TraceMiddleware)
 
 for router in routers:
     app.include_router(router)
@@ -66,11 +93,3 @@ async def root() -> dict[str, str]:
         "version": __version__,
         "status": "running",
     }
-
-
-@app.get("/health", tags=["system"])
-async def health() -> dict[str, str]:
-    """Return a minimal health response."""
-
-    LOGGER.debug("health_endpoint_invoked")
-    return {"status": "healthy"}
