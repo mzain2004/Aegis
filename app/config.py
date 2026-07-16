@@ -82,6 +82,19 @@ class Settings(BaseSettings):
     health_check_timeout: int = Field(
         default=5, validation_alias="HEALTH_CHECK_TIMEOUT"
     )
+    failsafe_audit_log_path: str = Field(
+        default="/var/log/mcp-failsafe.log",
+        validation_alias="FAILSAFE_AUDIT_LOG_PATH",
+    )
+    failsafe_delegate_backend: str = Field(
+        default="kubernetes",
+        validation_alias="FAILSAFE_DELEGATE_BACKEND",
+    )
+    failsafe_cgroup_id: int = Field(default=0, validation_alias="FAILSAFE_CGROUP_ID")
+    failsafe_fail_on_block: bool = Field(
+        default=False,
+        validation_alias="FAILSAFE_FAIL_ON_BLOCK",
+    )
 
     @field_validator("proxy_host")
     @classmethod
@@ -199,6 +212,35 @@ class Settings(BaseSettings):
         if not environment:
             raise ValueError("ENVIRONMENT must not be empty")
         return environment
+
+    @field_validator("failsafe_audit_log_path")
+    @classmethod
+    def validate_failsafe_audit_log_path(cls, value: str) -> str:
+        """Ensure the failsafe audit log path is present and normalized."""
+
+        path = value.strip()
+        if not path:
+            raise ValueError("FAILSAFE_AUDIT_LOG_PATH must not be empty")
+        return path
+
+    @field_validator("failsafe_delegate_backend")
+    @classmethod
+    def validate_failsafe_delegate_backend(cls, value: str) -> str:
+        """Normalize the transport backend the failsafe executor delegates to."""
+
+        backend = value.strip().lower()
+        if not backend:
+            raise ValueError("FAILSAFE_DELEGATE_BACKEND must not be empty")
+        return backend
+
+    @field_validator("failsafe_cgroup_id")
+    @classmethod
+    def validate_failsafe_cgroup_id(cls, value: int) -> int:
+        """Keep the cgroup filter non-negative (0 disables filtering)."""
+
+        if value < 0:
+            raise ValueError("FAILSAFE_CGROUP_ID must be zero or greater")
+        return value
 
 
 @lru_cache(maxsize=1)
