@@ -79,7 +79,7 @@ def test_reader_reads_only_events_after_offset(tmp_path: Path) -> None:
         "[AUDIT] EXEC    tgid=1    pid=1    uid=0    cgid=1    "
         "comm=first             target=/bin/first\n"
     )
-    log_path.write_text(first_line)
+    log_path.write_text(first_line, newline="\n")
 
     reader = FailsafeAuditReader(str(log_path))
     start_offset = reader.current_offset()
@@ -88,7 +88,7 @@ def test_reader_reads_only_events_after_offset(tmp_path: Path) -> None:
         "[BLOCK] EXEC    tgid=2    pid=2    uid=0    cgid=2    "
         "comm=second             target=/bin/second\n"
     )
-    with log_path.open("a") as handle:
+    with log_path.open("a", newline="\n") as handle:
         handle.write(second_line)
 
     events, new_offset = reader.read_since(start_offset)
@@ -107,7 +107,7 @@ def test_reader_restarts_on_truncation(tmp_path: Path) -> None:
         "[AUDIT] EXEC    tgid=2    pid=2    uid=0    cgid=2    "
         "comm=second            target=/bin/second\n"
     )
-    log_path.write_text(long_content)
+    log_path.write_text(long_content, newline="\n")
 
     reader = FailsafeAuditReader(str(log_path))
     stale_offset = reader.current_offset()
@@ -117,7 +117,7 @@ def test_reader_restarts_on_truncation(tmp_path: Path) -> None:
         "comm=x target=/bin/x\n"
     )
     assert len(truncated_line) < stale_offset
-    log_path.write_text(truncated_line)
+    log_path.write_text(truncated_line, newline="\n")
 
     events, new_offset = reader.read_since(stale_offset)
 
@@ -127,13 +127,16 @@ def test_reader_restarts_on_truncation(tmp_path: Path) -> None:
 
 
 def test_reader_unauthorized_permission_denied_returns_empty(tmp_path: Path) -> None:
-    if os.geteuid() == 0:
+    if not hasattr(os, "geteuid"):
+        pytest.skip("Windows does not support POSIX file permission checks")
+    elif os.geteuid() == 0:
         pytest.skip("root bypasses file permission checks")
 
     log_path = tmp_path / "mcp-failsafe.log"
     log_path.write_text(
         "[BLOCK] EXEC    tgid=1    pid=1    uid=0    cgid=1    "
-        "comm=x             target=/bin/x\n"
+        "comm=x             target=/bin/x\n",
+        newline="\n",
     )
     os.chmod(log_path, 0o000)
     reader = FailsafeAuditReader(str(log_path))
@@ -151,7 +154,8 @@ def test_reader_stale_offset_beyond_file_size_resets_safely(tmp_path: Path) -> N
     log_path = tmp_path / "mcp-failsafe.log"
     log_path.write_text(
         "[AUDIT] EXEC    tgid=1    pid=1    uid=0    cgid=1    "
-        "comm=first             target=/bin/first\n"
+        "comm=first             target=/bin/first\n",
+        newline="\n",
     )
     reader = FailsafeAuditReader(str(log_path))
 
@@ -165,7 +169,7 @@ def test_reader_stale_offset_beyond_file_size_resets_safely(tmp_path: Path) -> N
         "[BLOCK] EXEC    tgid=2    pid=2    uid=0    cgid=2    "
         "comm=second            target=/bin/second\n"
     )
-    log_path.write_text(new_line)
+    log_path.write_text(new_line, newline="\n")
     assert stale_offset > len(new_line)
 
     events, new_offset = reader.read_since(stale_offset)

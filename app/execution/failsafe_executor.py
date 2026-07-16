@@ -20,7 +20,7 @@ from __future__ import annotations
 from app.config import Settings, get_settings
 from app.execution.base import ExecutionEngine
 from app.execution.failsafe_audit import FailsafeAuditEvent, FailsafeAuditReader
-from app.execution.models import ExecutionResult
+from app.execution.models import ExecutionContext, ExecutionResult
 from app.logger import get_logger
 
 LOGGER = get_logger(__name__)
@@ -49,9 +49,14 @@ class FailsafeCorrelatingExecutor(ExecutionEngine):
         self,
         body: bytes,
         headers: dict[str, str],
+        *,
+        context: ExecutionContext | None = None,
     ) -> ExecutionResult:
         start_offset = self._reader.current_offset()
-        result = await self._delegate.execute(body, headers)
+        try:
+            result = await self._delegate.execute(body, headers, context=context)
+        except TypeError:
+            result = await self._delegate.execute(body, headers)
         blocks = self._read_blocks(start_offset)
 
         for event in blocks:
