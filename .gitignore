@@ -27,3 +27,11 @@ dist/
 # Editor and OS noise
 .DS_Store
 .vscode/
+
+# Local database files and WAL logs
+*.db
+*.db-shm
+*.db-wal
+
+# Local binaries
+*.exe

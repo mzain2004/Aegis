@@ -30,6 +30,8 @@ class _StubDelegate(ExecutionEngine):
         self,
         body: bytes,
         headers: dict[str, str],
+        *,
+        context: object | None = None,
     ) -> ExecutionResult:
         if self._log_path is not None and self._line_to_write is not None:
             with self._log_path.open("a") as handle:
@@ -59,6 +61,8 @@ class _OnceThenQuietDelegate(ExecutionEngine):
         self,
         body: bytes,
         headers: dict[str, str],
+        *,
+        context: object | None = None,
     ) -> ExecutionResult:
         self._call_count += 1
         if self._call_count == 1:

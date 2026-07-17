@@ -9,6 +9,8 @@ All tests use mocked HTTP transports — no real Kubernetes cluster required.
 
 from __future__ import annotations
 
+from typing import Any
+
 import asyncio
 import json
 from dataclasses import FrozenInstanceError
@@ -60,12 +62,12 @@ from app.execution.operation_map import (
 # ============================================================================
 
 
-def _make_settings(**overrides: object) -> object:
+def _make_settings(**overrides: object) -> Any:
     return get_settings().model_copy(update=overrides)
 
 
 def _make_context(**overrides: object) -> ExecutionContext:
-    defaults = {
+    defaults: dict[str, Any] = {
         "request_id": "req-1",
         "approval_id": "nonce-1",
         "request_fingerprint": "abc123",
