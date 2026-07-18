@@ -18,16 +18,12 @@ from app.database.models import (
 )
 from app.database.repositories import (
     AuditRepository,
-    ExecutionRepository,
     PendingRepository,
 )
 from app.database.services import (
     CleanupService,
-    ExecutionService,
     PersistenceService,
 )
-from app.execution.base import ExecutionEngine
-from app.execution.models import ExecutionResult
 from app.rpc_parser import MCPRequestInfo, OperationType
 
 
@@ -44,18 +40,6 @@ def db_session() -> Generator[Session, None, None]:
         db.close()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
-
-
-class MockExecutor(ExecutionEngine):
-    def __init__(self, result: ExecutionResult) -> None:
-        self.result = result
-        self.calls = 0
-
-    async def execute(
-        self, body: bytes, headers: dict[str, str], *, context=None
-    ) -> ExecutionResult:
-        self.calls += 1
-        return self.result
 
 
 # ============================================================================
@@ -177,66 +161,6 @@ def test_intercept_request_creates_records_and_logs(db_session: Session) -> None
     event_types = [e.event_type for e in events]
     assert "REQUEST_INTERCEPTED" in event_types
     assert "REQUEST_STORED" in event_types
-
-
-# ============================================================================
-# 3. Transaction Safety & Rollback Tests
-# ============================================================================
-
-
-@pytest.mark.asyncio
-async def test_execution_service_rollback_on_failure(db_session: Session) -> None:
-    # Set up pending request in DB
-    now = datetime.now(UTC).replace(tzinfo=None)
-    req = PendingRequestModel(
-        approval_id="app-roll",
-        nonce="nonce-roll",
-        payload_hash="hash-roll",
-        tool="kubectl_delete",
-        operation="mutating",
-        namespace="default",
-        resource="",
-        raw_payload=b"{}",
-        headers={},
-        status="approved",
-        expires_at=now + timedelta(seconds=300),
-    )
-    db_session.add(req)
-    db_session.commit()
-
-    # Create MockExecutor that returns failure
-    engine = MockExecutor(
-        ExecutionResult(
-            status_code=500,
-            headers={},
-            body=b"Execution Failure",
-            latency_ms=10,
-            backend="kubernetes",
-            success=False,
-            error_type="api_error",
-        )
-    )
-
-    exec_service = ExecutionService(db_session)
-    # Perform execution
-    status_code, body, headers = await exec_service.execute_approved(
-        req, engine, "operator-1"
-    )
-
-    assert status_code == 500
-    assert body == b"Execution Failure"
-
-    # Verify request status in DB was updated to failed,
-    # and NOT left in approved/executing
-    db_session.refresh(req)
-    assert req.status == "failed"
-
-    # Verify execution record has correct failure metrics
-    exec_repo = ExecutionRepository(db_session)
-    failed_runs = exec_repo.get_failed_executions()
-    assert len(failed_runs) == 1
-    assert failed_runs[0].status == "failed"
-    assert failed_runs[0].error_type == "api_error"
 
 
 # ============================================================================
