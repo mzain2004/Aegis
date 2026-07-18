@@ -47,6 +47,14 @@ class MCPForwarder:
         url = self.settings.k8s_mcp_server_url
         timeout = httpx.Timeout(self.settings.mcp_timeout_seconds)
 
+        # Propagate correlation ID
+        from app.monitoring.tracing import correlation_id_ctx
+
+        cid = correlation_id_ctx.get()
+        if cid:
+            headers = dict(headers)
+            headers["X-Correlation-ID"] = cid
+
         # Prepare client (use provided client for tests, otherwise create one)
         client_provided = self._client is not None
         client = self._client or httpx.AsyncClient()

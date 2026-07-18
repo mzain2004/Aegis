@@ -20,7 +20,13 @@ class MockExecutionEngine(ExecutionEngine):
     result: ExecutionResult
     calls: int = 0
 
-    async def execute(self, body: bytes, headers: dict[str, str]) -> ExecutionResult:
+    async def execute(
+        self,
+        body: bytes,
+        headers: dict[str, str],
+        *,
+        context: object | None = None,
+    ) -> ExecutionResult:
         self.calls += 1
         return self.result
 

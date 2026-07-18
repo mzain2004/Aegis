@@ -3,11 +3,22 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.rpc_parser import MCPRequestInfo
+
+
+class RequestStatus(StrEnum):
+    """The state of a suspended request in the approval pipeline."""
+
+    PENDING = "pending"
+    APPROVED = "approved"
+    EXECUTING = "executing"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class PendingRequest(BaseModel):
@@ -22,6 +33,14 @@ class PendingRequest(BaseModel):
     request_info: MCPRequestInfo = Field(description="Parsed MCP request metadata.")
     created_at: datetime = Field(description="Timestamp when the request was stored.")
     expires_at: datetime = Field(description="Timestamp when the request expires.")
+    status: RequestStatus = Field(
+        default=RequestStatus.PENDING,
+        description="Current state of the suspended request.",
+    )
+    approval_id: str = Field(
+        default="",
+        description="Stable approval identifier returned to client.",
+    )
 
 
 class ApprovalRequest(BaseModel):

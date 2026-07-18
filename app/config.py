@@ -56,6 +56,32 @@ class Settings(BaseSettings):
     )
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
+    database_url: str = Field(
+        default="sqlite:///./aegis.db",
+        validation_alias="DATABASE_URL",
+    )
+    auth_enabled: bool = Field(default=True, validation_alias="AUTH_ENABLED")
+    allow_anonymous_dev: bool = Field(
+        default=False, validation_alias="ALLOW_ANONYMOUS_DEV"
+    )
+    default_admin_username: str = Field(
+        default="admin", validation_alias="DEFAULT_ADMIN_USERNAME"
+    )
+    default_admin_apikey: str = Field(
+        default="admin-api-key-12345", validation_alias="DEFAULT_ADMIN_APIKEY"
+    )
+    prometheus_enabled: bool = Field(
+        default=True, validation_alias="PROMETHEUS_ENABLED"
+    )
+    otel_enabled: bool = Field(default=False, validation_alias="OTEL_ENABLED")
+    metrics_enabled: bool = Field(default=True, validation_alias="METRICS_ENABLED")
+    audit_retention_days: int = Field(
+        default=30, validation_alias="AUDIT_RETENTION_DAYS"
+    )
+    enable_trace: bool = Field(default=True, validation_alias="ENABLE_TRACE")
+    health_check_timeout: int = Field(
+        default=5, validation_alias="HEALTH_CHECK_TIMEOUT"
+    )
     failsafe_audit_log_path: str = Field(
         default="/var/log/mcp-failsafe.log",
         validation_alias="FAILSAFE_AUDIT_LOG_PATH",

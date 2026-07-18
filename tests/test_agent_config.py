@@ -9,8 +9,10 @@ from agent.client import build_default_headers, build_extra_body
 from agent.config import AgentSettings, get_agent_settings
 
 
+from collections.abc import Generator
+
 @pytest.fixture(autouse=True)
-def clear_agent_settings_cache() -> None:
+def clear_agent_settings_cache() -> Generator[None, None, None]:
     get_agent_settings.cache_clear()
     yield
     get_agent_settings.cache_clear()
