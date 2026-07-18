@@ -17,8 +17,8 @@ RUN groupadd -g 10001 aegis && \
 
 COPY --chown=aegis:aegis . .
 
-# Ensure the database and workspace directories are owned by aegis
-RUN chown -R aegis:aegis /app
+# Persist SQLite (and similar) under /app/data for container volume mounts.
+RUN mkdir -p /app/data && chown -R aegis:aegis /app
 
 USER aegis
 
