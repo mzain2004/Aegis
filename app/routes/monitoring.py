@@ -13,13 +13,15 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.auth_models import Permission
 from app.config import get_settings
+from app.database.models import OperatorModel
 from app.database.repositories import (
     ExecutionRepository,
     OperatorRepository,
     PendingRepository,
 )
-from app.dependencies import get_db
+from app.dependencies import get_db, require_permission
 from app.monitoring.metrics import monitoring_service
 
 router = APIRouter(tags=["monitoring"])
@@ -150,7 +152,12 @@ async def metrics_endpoint() -> Response:
 
 
 @router.get("/dashboard/summary")
-async def dashboard_summary(db: Annotated[Session, Depends(get_db)]) -> dict[str, Any]:
+async def dashboard_summary(
+    db: Annotated[Session, Depends(get_db)],
+    current_operator: Annotated[
+        OperatorModel, Depends(require_permission(Permission.VIEW_METRICS))
+    ],
+) -> dict[str, Any]:
     """Retrieve operational statistics and health summary for dashboard
     visualization."""
 
