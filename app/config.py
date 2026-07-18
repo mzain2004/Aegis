@@ -12,7 +12,7 @@ from __future__ import annotations
 from functools import lru_cache
 from urllib.parse import urlparse
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -241,6 +241,22 @@ class Settings(BaseSettings):
         if value < 0:
             raise ValueError("FAILSAFE_CGROUP_ID must be zero or greater")
         return value
+
+    @model_validator(mode="after")
+    def check_production_admin_credentials(self) -> Settings:
+        """Fail closed if a non-development environment still ships the
+        known-insecure default admin API key."""
+
+        if (
+            self.environment != "development"
+            and self.default_admin_apikey == "admin-api-key-12345"
+        ):
+            raise ValueError(
+                "DEFAULT_ADMIN_APIKEY must be overridden when ENVIRONMENT is not "
+                "'development'; refusing to start with the known insecure "
+                "default admin API key."
+            )
+        return self
 
 
 @lru_cache(maxsize=1)
