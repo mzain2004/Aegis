@@ -26,9 +26,12 @@ be able to inspect what will run before allowing it to reach infrastructure.
 Transparent, byte-preserving forwarding also matters because a security gateway
 should not silently rewrite agent intent or upstream responses.
 
-The current `/approve/` endpoint is a prototype release mechanism. It does not
-authenticate an operator or verify a signed approval, so it must not be treated
-as production-grade human authorization.
+The `/approve/` endpoint requires an authenticated operator (API-key identity
+plus role-based permission checks) and verifies an HMAC signature when one is
+supplied. A signature is not yet mandatory on every approval, and the
+tool-call classification behind the whole flow is still a hardcoded,
+default-allow list, so this must not be treated as a complete, production-grade
+security boundary.
 
 ## Vision
 
@@ -67,7 +70,7 @@ flowchart LR
 | Aegis Proxy | FastAPI entry point that captures raw request bytes and coordinates classification, forwarding, or suspension. |
 | JSON-RPC Parser | Extracts the JSON-RPC version, request ID, method, and `params.name` tool identifier without changing the body. |
 | Classification Engine | Compares tool names with explicit read-only and mutating Kubernetes tool sets. |
-| Pending Request Store | Holds suspended requests, headers, fingerprints, metadata, and expiry times in process memory. |
+| Pending Request Store | Holds suspended requests, headers, fingerprints, metadata, and expiry times in a SQLAlchemy-backed relational database (`PendingRequestModel`); pending state survives process restarts. |
 | Approval Service | Accepts a nonce through `POST /approve/` and requests execution of the stored payload. |
 | Execution Layer | Defines the backend interface, result model, factory, and error types. |
 | Kubernetes Executor | Sends stored raw bytes to the configured Kubernetes MCP server over HTTP. This is a transport implementation, not a Kubernetes workload controller. |
@@ -102,44 +105,62 @@ currently follow the forwarding path. A default-deny policy is planned.
 - [x] JSON-RPC inspection and MCP tool-name extraction
 - [x] Explicit read-only and mutating tool classification
 - [x] SHA-256 request fingerprinting and UUID4 nonce generation
-- [x] Thread-safe, TTL-aware in-memory pending request storage
+- [x] Thread-safe, TTL-aware, database-backed pending request storage with
+      atomic claim/consume
 - [x] Mutating-request suspension with HTTP `202` responses
-- [x] Approval endpoint that releases a pending request by nonce
+- [x] Authenticated approval endpoint (operator API key + RBAC) with optional
+      HMAC signature verification
 - [x] Execution interface, result model, backend factory, and error model
 - [x] Kubernetes MCP HTTP executor
+- [x] Persistent, structured audit history (`GET /audit`)
+- [x] Prometheus metrics endpoint (`GET /metrics`, enabled by default)
 - [x] Unit and integration-style tests for configuration, parsing, forwarding,
       suspension, storage, approval, and execution
 - [x] Docker image definition
 
 ### Current limitations
 
-- Approval is unauthenticated and is based only on possession of a nonce.
-- HMAC verification is not implemented.
-- Pending state is process-local and is lost on restart.
-- Duplicate sequential approvals are rejected after successful execution, but
-  nonce claiming is not atomic across concurrent approval requests.
+- HMAC signature verification is implemented and constant-time, but it is not
+  mandatory: an approval submitted without a `signature` field is still
+  accepted.
+- `GET /dashboard/summary` does not yet require operator authentication, unlike
+  the `/approve/*` routes, which enforce role-based permission checks.
+- The tool-call policy (which tool names are treated as read-only vs.
+  mutating) is a static allowlist embedded in source code
+  (`app/tool_policy.py`), with no default-deny or runtime-configurable policy
+  engine.
 - Unknown and invalid requests are forwarded rather than denied.
-- The tool policy is a static allowlist embedded in source code.
+- The default admin API key ships as a known value (`admin-api-key-12345`)
+  with no enforced requirement to override it outside development.
+- No request-rate limiting is implemented.
+- No operator-facing web UI exists; operational data is exposed only as JSON
+  via `/dashboard/summary`, `/history`, and `/audit`.
 - Retries are configurable but are not implemented by the executor.
 - No Kubernetes manifests or production deployment configuration are included.
 
 ## Planned Features
 
-The following capabilities are future work and are **not implemented**:
+Persistent storage, HMAC signing, atomic replay protection, RBAC, audit
+logging, and Prometheus metrics have all moved from "planned" to implemented
+(see [Current Implementation Status](#current-implementation-status) and
+[Security Design](#security-design)). The following remain future work and
+are **not implemented**:
 
-- Redis-backed pending request storage
-- Persistent approval and audit database
-- HMAC-signed approval artifacts
-- Atomic nonce consumption and complete replay protection
-- Production authentication and authorization
-- Role-based access control (RBAC)
-- Configurable policy engine and default-deny behavior
-- Multiple execution backends
-- Web approval dashboard
-- Searchable audit history
-- OpenTelemetry tracing
-- Prometheus metrics
-- Rate limiting
+- Redis-backed pending request storage (an alternative to the current
+  SQL-backed store, for higher-throughput deployments)
+- Mandatory HMAC signature verification on every approval (currently verified
+  only when a `signature` field is supplied)
+- A configurable, default-deny tool-call policy engine (the current
+  read-only/mutating classification is a static, hardcoded allowlist)
+- An operator-facing web approval dashboard (`/dashboard/summary`, `/history`,
+  and `/audit` exist as JSON APIs; there is no browser UI)
+- Multiple execution backends (only the Kubernetes MCP HTTP executor exists)
+- OpenTelemetry tracing enabled by default (the integration exists but is
+  disabled unless `OTEL_ENABLED=true` is set)
+- Rate limiting (no request-rate-limiting middleware exists)
+- A default admin credential that is required to change outside development
+  (the API key exists and is enforced for authentication, but the known
+  default value is not yet rejected in non-development environments)
 - High-availability deployment
 - Kubernetes deployment manifests and production hardening
 
@@ -148,29 +169,32 @@ The following capabilities are future work and are **not implemented**:
 ```text
 Aegis/
 ├── app/
-│   ├── execution/              # Execution interface, models, factory, and Kubernetes backend
-│   ├── routes/                 # Proxy and approval HTTP routes
-│   ├── utils/                  # Reserved package for shared utilities
-│   ├── config.py               # Validated environment settings
-│   ├── crypto.py               # SHA-256 and UUID4 helpers
-│   ├── dependencies.py         # FastAPI dependency providers
-│   ├── forwarder.py            # Transparent upstream HTTP forwarding
-│   ├── logger.py               # Structured logging configuration
-│   ├── main.py                 # FastAPI application entry point
-│   ├── models.py               # Pending and supporting data models
-│   ├── pending_store.py        # In-memory TTL pending store
-│   ├── rpc_parser.py           # Active JSON-RPC parser and classifier
-│   └── tool_policy.py          # Read-only and mutating tool sets
-├── tests/                      # Pytest test suite
-├── .env.example                # Example runtime environment
-├── Dockerfile                 # Python 3.12 container image
-├── pyproject.toml              # Pytest, Ruff, Black, isort, and mypy configuration
-└── requirements.txt            # Runtime and development dependencies
+│   ├── audit/                  # Structured audit event definitions
+│   ├── database/                # SQLAlchemy models, repositories, services, and bootstrap
+│   ├── execution/                # Execution interface, models, factory, and Kubernetes backend
+│   ├── monitoring/               # Prometheus metrics, OpenTelemetry tracing, cleanup scheduler
+│   ├── routes/                   # Proxy, approval, and monitoring HTTP routes
+│   ├── utils/                    # Reserved package for shared utilities
+│   ├── auth_models.py            # Operator roles, permissions, and RBAC schemas
+│   ├── cache.py                  # In-process caching helpers
+│   ├── config.py                 # Validated environment settings
+│   ├── crypto.py                 # SHA-256, UUID4, and HMAC helpers
+│   ├── dependencies.py           # FastAPI dependency providers
+│   ├── forwarder.py              # Transparent upstream HTTP forwarding
+│   ├── logger.py                 # Structured logging configuration
+│   ├── main.py                   # FastAPI application entry point
+│   ├── models.py                 # Pending and supporting data models
+│   ├── pending_store.py          # Database-backed TTL pending store with atomic claim/consume
+│   ├── rpc_parser.py             # Active JSON-RPC parser and classifier
+│   └── tool_policy.py            # Read-only and mutating tool sets
+├── alembic/                     # Database migrations
+├── deploy/                      # Docker Compose, ECS bootstrap script, and a mock MCP server for local demos
+├── tests/                       # Pytest test suite
+├── .env.example                 # Example runtime environment
+├── Dockerfile                   # Python 3.12 container image
+├── pyproject.toml               # Pytest, Ruff, Black, isort, and mypy configuration
+└── requirements.txt             # Runtime and development dependencies
 ```
-
-`app/parser.py` and `app/security.py` are legacy placeholders retained in the
-current tree; the active implementations are `app/rpc_parser.py` and
-`app/crypto.py`.
 
 ## Development Phases
 
@@ -180,10 +204,10 @@ current tree; the active implementations are `app/rpc_parser.py` and
 | 2 — Transparent proxy | Completed | Byte-preserving HTTP forwarding and upstream error mapping. |
 | 3 — JSON-RPC inspection | Completed | Safe parsing, tool extraction, and read-only/mutating/unknown classification. |
 | 4 — Cryptographic execution guard | Completed | SHA-256 fingerprints, UUID4 nonces, TTL storage, and mutation suspension. |
-| 5 — Approval workflow | Prototype completed | Nonce-based approval route, successful-request removal, and duplicate sequential approval rejection. Authentication and signed approvals remain planned. |
+| 5 — Approval workflow | Completed | Nonce-based approval route with atomic claim/consume, database-backed pending storage, operator authentication (RBAC), and optional HMAC signature verification. |
 | 6 — Execution framework | Completed | Executor abstraction, factory, result model, and Kubernetes MCP HTTP backend. |
-| 7 — Durable security controls | Upcoming | Persistent storage, authenticated approvals, HMAC verification, atomic replay protection, and policy enforcement. |
-| 8 — Operations and user experience | Upcoming | Audit UI, observability, rate limiting, deployment manifests, and HA operation. |
+| 7 — Durable security controls | Mostly complete | Persistent storage, authenticated approvals, atomic replay protection, and RBAC are done. Still outstanding: making HMAC signatures mandatory, and a configurable, default-deny tool-call policy engine. |
+| 8 — Operations and user experience | In progress | Structured audit history and Prometheus metrics are live (`/audit`, `/metrics`); OpenTelemetry exists but is disabled by default. Still outstanding: operator-facing web UI, rate limiting, deployment manifests, and HA operation. |
 
 ## Team Responsibilities
 
@@ -266,9 +290,16 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 9000
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /` | Service metadata |
-| `GET /health` | Basic health response |
+| `GET /health` | Liveness probe with database connectivity check |
+| `GET /live` | Fast liveness check |
+| `GET /ready` | Readiness check across database, pending store, execution, and auth subsystems |
+| `GET /metrics` | Prometheus metrics (enabled by default) |
 | `POST /` | MCP proxy, inspection, and suspension entry point |
-| `POST /approve/` | Prototype nonce-based release endpoint |
+| `POST /approve/` | Authenticated, RBAC-gated approval/release endpoint with optional HMAC verification |
+| `GET /approve/pending` | List pending approvals (requires `VIEW_PENDING`) |
+| `GET /approve/history` | Execution history (requires `VIEW_HISTORY`) |
+| `GET /approve/audit` | Audit event history (requires `VIEW_AUDIT`) |
+| `GET /dashboard/summary` | Operational/health summary for dashboards (does not yet require authentication) |
 | `GET /docs` | Swagger UI |
 | `GET /redoc` | ReDoc |
 
@@ -343,22 +374,33 @@ These checks also run automatically in CI on every pull request via
   on their initial call. A separate request to `/approve/` is required.
 - **Limited replay handling:** After a successful execution, the nonce is
   removed and a later sequential approval receives HTTP `409`.
+- **Atomic replay protection:** Approval claims use a compare-and-swap
+  database update (`UPDATE ... WHERE status = 'pending'`), so concurrent
+  approval requests for the same nonce cannot both succeed.
+- **HMAC-signed approvals:** `POST /approve/` verifies an HMAC-SHA256
+  signature (constant-time comparison) when a `signature` field is supplied.
+- **Authenticated human approval:** `/approve/*` routes require an
+  authenticated operator identity (API key) and enforce role-based
+  permissions (viewer, approver, administrator).
+- **Persistent, structured audit history:** Approval and execution events are
+  recorded to a database table (`AuditEventModel`) and retrievable via
+  `GET /audit`; this history survives process restarts.
 
 ### Planned controls
 
-- **HMAC approval:** The configuration contains a reserved shared secret, but
-  the approval route does not accept or verify an HMAC signature.
-- **Complete replay protection:** Atomic nonce claim/consumption is needed to
-  prevent concurrent approvals from racing.
-- **Authenticated human approval:** Identity verification, RBAC, and an operator
-  review interface are not implemented.
-- **Policy hardening:** Unknown requests currently pass through. A configurable,
-  default-deny policy engine is planned.
-- **Durable auditability:** Structured operational logs exist, but there is no
-  persistent, tamper-evident approval or execution history.
+- **Mandatory HMAC signatures:** A signature is currently verified when
+  present but is not yet required on every approval.
+- **Policy hardening:** Unknown requests currently pass through, and the
+  read-only/mutating tool classification is a static, hardcoded allowlist. A
+  configurable, default-deny policy engine is planned.
+- **Authentication on all operational endpoints:** `GET /dashboard/summary`
+  does not yet require the operator authentication enforced elsewhere.
+- **Fail-closed default credentials:** The default admin API key is not yet
+  rejected outside development environments.
+- **Rate limiting:** No request-rate-limiting middleware exists yet.
 
-Current behavior should be evaluated as a prototype mechanism, not as a
-production zero-trust guarantee.
+Current behavior should be evaluated as a strengthened prototype, not as a
+complete production zero-trust guarantee.
 
 ## Roadmap
 
@@ -366,16 +408,23 @@ production zero-trust guarantee.
 - [x] Transparent reverse proxy
 - [x] JSON-RPC parser and tool classification
 - [x] SHA-256 fingerprint and nonce guard
-- [x] In-memory pending request workflow
-- [x] Prototype approval endpoint
+- [x] Persistent, database-backed pending request storage
+- [x] Authenticated approval endpoint (operator API key + RBAC)
+- [x] Atomic replay protection (compare-and-swap approval claims)
 - [x] Execution framework and Kubernetes MCP transport
-- [ ] Persistent pending and approval storage
-- [ ] HMAC-signed, authenticated approvals
-- [ ] Atomic replay protection
-- [ ] Configurable policy engine and RBAC
-- [ ] Audit history and web dashboard
-- [ ] OpenTelemetry and Prometheus observability
-- [ ] Rate limiting and production authentication
+- [x] Role-based access control (RBAC) for operator routes
+- [x] Persistent, queryable audit history (`/audit`)
+- [x] Prometheus metrics (`/metrics`, enabled by default)
+- [ ] Mandatory HMAC signature verification on every approval (currently
+      verified only when supplied)
+- [ ] Configurable, default-deny tool-call policy engine (still a hardcoded
+      allowlist)
+- [ ] Operator-facing web dashboard (JSON APIs exist; no browser UI)
+- [ ] OpenTelemetry tracing enabled by default (implemented, opt-in via
+      `OTEL_ENABLED`)
+- [ ] Rate limiting
+- [ ] Fail-closed default admin credential outside development
+- [ ] Authentication on `GET /dashboard/summary`
 - [ ] Kubernetes manifests and high-availability deployment
 
 ## Contributing
