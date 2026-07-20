@@ -10,10 +10,17 @@ const demoPending = [
 ]
 const demoHistory = [{ status: 'completed' }, { status: 'completed' }, { status: 'failed' }, { status: 'completed' }, { status: 'completed' }]
 
-const api = async (path, options) => {
-  const response = await fetch(`/api${path}`, options)
+const API_KEY = import.meta.env.VITE_API_KEY || 'admin-api-key-12345'
+
+const api = async (path, options = {}) => {
+  const headers = new Headers(options.headers || {})
+  if (!headers.has('Authorization')) {
+    headers.set('Authorization', `Api-Key ${API_KEY}`)
+  }
+  const response = await fetch(`/api${path}`, { ...options, headers })
   if (!response.ok) throw new Error(`API ${response.status}`)
-  return response.json()
+  const text = await response.text()
+  return text ? JSON.parse(text) : {}
 }
 
 function App() {

@@ -97,8 +97,6 @@ async def approve_entrypoint(
                 content={"message": "invalid signature"},
             )
 
-    pending_request = pending_store.get(nonce)
-    if pending_request is None:
     # 1. Validation and Replay Protection Check
     pending_request, error_reason = pending_store.get_if_valid(nonce)
     if error_reason == "expired":
