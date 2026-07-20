@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Bootstrap Veto Ops on Alibaba Cloud ECS (Ubuntu 22.04/24.04).
-# Create a free-trial or cheap ECS instance, SSH in, clone the repo, then:
-#   sudo bash deploy/bootstrap-ecs.sh
+# Bootstrap Veto Ops on a Vultr VPS (Ubuntu 22.04/24.04).
+# Create a cheap Cloud Compute instance, SSH in, clone the repo, then:
+#   sudo bash deploy/bootstrap-vultr.sh
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -41,15 +41,15 @@ for _ in $(seq 1 30); do
     PUBLIC_IP="$(curl -fsS https://ipv4.icanhazip.com 2>/dev/null || true)"
     echo
     echo "Next:"
-    echo "  1) Alibaba ECS security group: allow inbound TCP 22 and (demo) TCP 9000"
+    echo "  1) Vultr Firewall / OS firewall: allow TCP 22 and (demo) TCP 9000"
     if [[ -n "${PUBLIC_IP}" ]]; then
       echo "  2) Health from outside: curl http://${PUBLIC_IP}:9000/health"
     else
-      echo "  2) Health from outside: curl http://<ECS_PUBLIC_IP>:9000/health"
+      echo "  2) Health from outside: curl http://<VULTR_IP>:9000/health"
     fi
     echo "  3) Edit deploy/.env secrets (SHARED_HMAC_SECRET, admin key, DASHSCOPE_API_KEY)"
     echo "  4) Restart: docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d"
-    echo "  5) Agent on the ECS host: VETO_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
+    echo "  5) Agent on the VPS: VETO_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
     exit 0
   fi
   sleep 2
