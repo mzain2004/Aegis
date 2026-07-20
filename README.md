@@ -393,4 +393,4 @@ for malformed, unauthorized, expired, and repeated requests where applicable.
 
 ## License
 
-License to be determined.
+MIT License. See [LICENSE](LICENSE).
