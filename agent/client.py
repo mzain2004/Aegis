@@ -1,4 +1,13 @@
-"""OpenAI-compatible Responses API client factory for DashScope / Qwen."""
+"""OpenAI-compatible Responses API client for Alibaba Cloud DashScope (Qwen).
+
+Alibaba Cloud services used here:
+  - Model Studio / DashScope Responses API
+    base: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+  - Session cache header: x-dashscope-session-cache
+  - Qwen preserve_thinking via extra_body (see agent/loop.py)
+
+Deployment host (ECS) proof: deploy/alibaba_cloud_proof.py
+"""
 
 from __future__ import annotations
 
