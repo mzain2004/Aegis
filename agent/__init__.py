@@ -1,8 +1,8 @@
-"""Qwen SafeOps agentic engine (Engineer 2).
+"""Veto Ops agentic engine (Engineer 2).
 
 Uses Alibaba Cloud Model Studio's OpenAI-compatible Responses API with
 ``previous_response_id`` chaining, ``preserve_thinking``, and session cache
-headers. Tool traffic is aimed at the Aegis execution-guard proxy.
+headers. Tool traffic is aimed at the Veto Ops execution-guard proxy.
 """
 
 from __future__ import annotations

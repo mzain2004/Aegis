@@ -26,7 +26,7 @@ def get_settings() -> Settings:
     return load_settings()
 
 
-def get_logger(name: str = "aegis") -> Any:
+def get_logger(name: str = "veto-ops") -> Any:
     """Return a structured logger for dependency injection."""
     return build_logger(name)
 
@@ -71,7 +71,7 @@ def get_current_operator(
             id=0,
             username="anonymous_admin",
             display_name="Anonymous Administrator",
-            email="admin@aegis.local",
+            email="admin@veto-ops.local",
             role="administrator",
             active=True,
         )
@@ -81,7 +81,7 @@ def get_current_operator(
         id=0,
         username="anonymous_dev",
         display_name="Anonymous Developer",
-        email="dev@aegis.local",
+        email="dev@veto-ops.local",
         role="administrator",
         active=True,
     )

@@ -1,4 +1,4 @@
-"""MCP tool configuration aimed at the Aegis execution-guard proxy."""
+"""MCP tool configuration aimed at the Veto Ops execution-guard proxy."""
 
 from __future__ import annotations
 
@@ -6,36 +6,40 @@ from typing import Any
 
 from agent.config import AgentSettings, get_agent_settings
 
-AEGIS_MCP_SERVER_LABEL = "aegis-k8s-guard"
-AEGIS_MCP_SERVER_DESCRIPTION = (
+VETO_MCP_SERVER_LABEL = "veto-ops-k8s-guard"
+VETO_MCP_SERVER_DESCRIPTION = (
     "Zero-trust Kubernetes MCP execution guard. Read-only tools pass through; "
     "mutating tools are suspended until out-of-band human HMAC approval."
 )
 
+# Backward-compatible aliases for older imports/tests.
+AEGIS_MCP_SERVER_LABEL = VETO_MCP_SERVER_LABEL
+AEGIS_MCP_SERVER_DESCRIPTION = VETO_MCP_SERVER_DESCRIPTION
+
 
 def build_remote_mcp_tool(settings: AgentSettings | None = None) -> dict[str, Any]:
-    """Build a Responses API ``mcp`` tool entry pointing at Aegis.
+    """Build a Responses API ``mcp`` tool entry pointing at Veto Ops.
 
-    DashScope currently requires SSE for remote MCP. Set ``AEGIS_MCP_SSE_URL`` to
-    a publicly reachable SSE endpoint that fronts the Aegis proxy (or an SSE
+    DashScope currently requires SSE for remote MCP. Set ``VETO_MCP_SSE_URL`` to
+    a publicly reachable SSE endpoint that fronts the Veto Ops proxy (or an SSE
     facade in front of it). Local ``http://127.0.0.1`` URLs are not reachable
     from Model Studio.
     """
 
     cfg = settings or get_agent_settings()
-    server_url = cfg.aegis_mcp_sse_url.strip()
+    server_url = cfg.veto_mcp_sse_url.strip()
     if not server_url:
         raise ValueError(
-            "AEGIS_MCP_SSE_URL is required for remote_mcp tool mode. "
+            "VETO_MCP_SSE_URL is required for remote_mcp tool mode. "
             "Use AGENT_TOOL_MODE=bridge for local HTTP JSON-RPC against "
-            "AEGIS_PROXY_URL."
+            "VETO_PROXY_URL."
         )
 
     return {
         "type": "mcp",
         "server_protocol": "sse",
-        "server_label": AEGIS_MCP_SERVER_LABEL,
-        "server_description": AEGIS_MCP_SERVER_DESCRIPTION,
+        "server_label": VETO_MCP_SERVER_LABEL,
+        "server_description": VETO_MCP_SERVER_DESCRIPTION,
         "server_url": server_url,
     }
 
@@ -49,7 +53,6 @@ def resolve_tools_for_mode(
     if cfg.tool_mode == "remote_mcp":
         return [build_remote_mcp_tool(cfg)]
 
-    # Imported lazily to keep mcp_config free of function-schema coupling for tests.
     from agent.tools import build_function_tools
 
     return build_function_tools()

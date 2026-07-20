@@ -13,21 +13,21 @@ _TOOL_DESCRIPTIONS: dict[str, str] = {
     "kubectl_top": "Show resource usage (CPU/memory) for nodes or pods.",
     "kubectl_events": "List Kubernetes events for diagnosis.",
     "kubectl_apply": (
-        "Apply a Kubernetes manifest. Requires human approval via Aegis."
+        "Apply a Kubernetes manifest. Requires human approval via Veto Ops."
     ),
     "kubectl_create": (
-        "Create a Kubernetes resource. Requires human approval via Aegis."
+        "Create a Kubernetes resource. Requires human approval via Veto Ops."
     ),
     "kubectl_delete": (
-        "Delete a Kubernetes resource. Requires human approval via Aegis."
+        "Delete a Kubernetes resource. Requires human approval via Veto Ops."
     ),
     "kubectl_patch": (
-        "Patch a Kubernetes resource. Requires human approval via Aegis."
+        "Patch a Kubernetes resource. Requires human approval via Veto Ops."
     ),
     "kubectl_replace": (
-        "Replace a Kubernetes resource. Requires human approval via Aegis."
+        "Replace a Kubernetes resource. Requires human approval via Veto Ops."
     ),
-    "kubectl_scale": "Scale a workload. Requires human approval via Aegis.",
+    "kubectl_scale": "Scale a workload. Requires human approval via Veto Ops.",
 }
 
 
@@ -74,7 +74,7 @@ def build_function_tools() -> list[dict[str, Any]]:
         )
         if name in MUTATING_TOOLS:
             description += (
-                " This mutation is intercepted by Aegis and may return "
+                " This mutation is intercepted by Veto Ops and may return "
                 "pending_approval until a human signs the HMAC challenge."
             )
         tools.append(

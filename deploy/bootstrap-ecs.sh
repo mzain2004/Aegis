@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Bootstrap Aegis on a free/cheap Alibaba Cloud ECS (Ubuntu 22.04/24.04).
-# Run as root or with sudo from a cloned Aegis repo:
+# Bootstrap Veto Ops on Alibaba Cloud ECS (Ubuntu 22.04/24.04).
+# Create a free-trial ECS instance, SSH in, clone the repo, then:
 #   sudo bash deploy/bootstrap-ecs.sh
 set -euo pipefail
 
@@ -29,21 +29,27 @@ if [[ ! -f "${DEPLOY_DIR}/.env" ]]; then
   echo "==> Created deploy/.env from env.example — edit secrets before public use"
 fi
 
-echo "==> Building and starting Aegis + mock MCP"
+echo "==> Building and starting Veto Ops proxy + mock MCP"
 cd "${REPO_ROOT}"
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 
 echo "==> Waiting for health"
 for _ in $(seq 1 30); do
   if curl -fsS "http://127.0.0.1:9000/health" >/dev/null 2>&1; then
-    echo "Aegis is healthy on :9000"
+    echo "Veto Ops is healthy on :9000"
     curl -fsS "http://127.0.0.1:9000/health" || true
+    PUBLIC_IP="$(curl -fsS https://ipv4.icanhazip.com 2>/dev/null || true)"
     echo
     echo "Next:"
-    echo "  1) Open Alibaba ECS security group: inbound TCP 9000 (demo only)"
-    echo "  2) Edit deploy/.env secrets (SHARED_HMAC_SECRET, admin key, DASHSCOPE_API_KEY)"
-    echo "  3) Restart: docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d"
-    echo "  4) Agent from host: AEGIS_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
+    echo "  1) Alibaba ECS security group: allow inbound TCP 22 and (demo) TCP 9000"
+    if [[ -n "${PUBLIC_IP}" ]]; then
+      echo "  2) Health from outside: curl http://${PUBLIC_IP}:9000/health"
+    else
+      echo "  2) Health from outside: curl http://<ECS_PUBLIC_IP>:9000/health"
+    fi
+    echo "  3) Edit deploy/.env secrets (SHARED_HMAC_SECRET, admin key, DASHSCOPE_API_KEY)"
+    echo "  4) Restart: docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d"
+    echo "  5) Agent on the ECS host: VETO_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
     exit 0
   fi
   sleep 2

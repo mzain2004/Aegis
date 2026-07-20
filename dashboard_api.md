@@ -1,4 +1,4 @@
-# Aegis Dashboard API
+# Veto Ops Dashboard API
 
 This document specifies the response format and schemas for the `/dashboard/summary` endpoint, providing real-time statistics for administrative consoles.
 

@@ -1,4 +1,4 @@
-"""Tests for the Aegis HTTP JSON-RPC bridge."""
+"""Tests for the Veto Ops HTTP JSON-RPC bridge."""
 
 from __future__ import annotations
 
@@ -7,15 +7,15 @@ import json
 import httpx
 import pytest
 
-from agent.bridge import AegisMCPBridge
+from agent.bridge import VetoProxyBridge
 from agent.config import AgentSettings
 
 
 @pytest.mark.asyncio
-async def test_bridge_posts_tools_call_to_aegis_proxy() -> None:
+async def test_bridge_posts_tools_call_to_veto_proxy() -> None:
     settings = AgentSettings(
         DASHSCOPE_API_KEY="sk-test-key-123456",
-        AEGIS_PROXY_URL="http://127.0.0.1:9000",
+        VETO_PROXY_URL="http://127.0.0.1:9000",
     )
     recorded: dict[str, object] = {}
 
@@ -29,7 +29,7 @@ async def test_bridge_posts_tools_call_to_aegis_proxy() -> None:
 
     transport = httpx.MockTransport(handler)
     async with httpx.AsyncClient(transport=transport) as client:
-        bridge = AegisMCPBridge(settings=settings, client=client)
+        bridge = VetoProxyBridge(settings=settings, client=client)
         result = await bridge.call_tool(
             "kubectl_get",
             {"command": "pods -n payments"},
@@ -48,7 +48,7 @@ async def test_bridge_posts_tools_call_to_aegis_proxy() -> None:
 async def test_bridge_detects_pending_approval() -> None:
     settings = AgentSettings(
         DASHSCOPE_API_KEY="sk-test-key-123456",
-        AEGIS_PROXY_URL="http://127.0.0.1:9000",
+        VETO_PROXY_URL="http://127.0.0.1:9000",
     )
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -63,7 +63,7 @@ async def test_bridge_detects_pending_approval() -> None:
 
     transport = httpx.MockTransport(handler)
     async with httpx.AsyncClient(transport=transport) as client:
-        bridge = AegisMCPBridge(settings=settings, client=client)
+        bridge = VetoProxyBridge(settings=settings, client=client)
         result = await bridge.call_tool("kubectl_delete", {"command": "ns/evil"})
 
     assert result.pending_approval is True
@@ -77,7 +77,7 @@ async def test_bridge_detects_pending_approval() -> None:
 async def test_bridge_timeout_is_normalized() -> None:
     settings = AgentSettings(
         DASHSCOPE_API_KEY="sk-test-key-123456",
-        AEGIS_PROXY_URL="http://127.0.0.1:9000",
+        VETO_PROXY_URL="http://127.0.0.1:9000",
         AGENT_MCP_BRIDGE_TIMEOUT_SECONDS=0.01,
     )
 
@@ -86,7 +86,7 @@ async def test_bridge_timeout_is_normalized() -> None:
 
     transport = httpx.MockTransport(handler)
     async with httpx.AsyncClient(transport=transport) as client:
-        bridge = AegisMCPBridge(settings=settings, client=client)
+        bridge = VetoProxyBridge(settings=settings, client=client)
         result = await bridge.call_tool("kubectl_get", {})
 
     assert result.timed_out is True

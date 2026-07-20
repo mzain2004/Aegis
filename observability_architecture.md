@@ -1,12 +1,12 @@
-# Aegis Observability Architecture
+# Veto Ops Observability Architecture
 
-Aegis implements a comprehensive, multi-layered observability and operational monitoring stack to trace, measure, and audit every incoming request, authentication verification, human approval, and container execution.
+Veto Ops implements a comprehensive, multi-layered observability and operational monitoring stack to trace, measure, and audit every incoming request, authentication verification, human approval, and container execution.
 
 ## Architectural Layers
 
 ```mermaid
 graph TD
-    Client[Client Request] --> Proxy[Aegis transparent proxy]
+    Client[Client Request] --> Proxy[Veto Ops transparent proxy]
     Proxy --> TraceMiddleware[TraceMiddleware & Correlation ID]
     TraceMiddleware --> Auth[Auth & RBAC Subsystem]
     Auth --> SM[Pending Store & State Machine]
@@ -24,7 +24,7 @@ graph TD
 ```
 
 ### 1. Request Tracing & Correlation IDs
-- **TraceMiddleware**: Intercepts every HTTP and JSON-RPC request entering Aegis.
+- **TraceMiddleware**: Intercepts every HTTP and JSON-RPC request entering Veto Ops.
 - **Correlation ID Propagation**: Resolves or generates an `X-Correlation-ID` header. This ID is passed to downstream execution environments, logged in all structured stdout messages, and attached to every persistent database audit log entry.
 - **OpenTelemetry Fallback**: Integrates with the `opentelemetry` SDK. If enabled, it traces spans for request routes and database queries. If OTel dependencies are absent, it falls back to a safe, no-op implementation.
 

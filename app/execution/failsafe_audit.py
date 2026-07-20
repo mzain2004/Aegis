@@ -1,14 +1,14 @@
 """Reader for the BPF-LSM failsafe's plaintext audit log.
 
 The kernel failsafe (a separate C/eBPF daemon, out of process and out of band
-from Aegis) streams one line per ring-buffer event to a log file, formatted
+from Veto Ops) streams one line per ring-buffer event to a log file, formatted
 roughly as::
 
     [BLOCK] EXEC    tgid=123  pid=456  uid=0  cgid=789  comm=curl  target=/usr/bin/curl
     [AUDIT] CONN    tgid=123  pid=456  uid=0  cgid=789  comm=curl  dst=93.184.216.34:443
 
 Fields are whitespace-padded for human readability, not fixed-width, so this
-reader tokenizes on whitespace rather than fixed byte offsets. Aegis never
+reader tokenizes on whitespace rather than fixed byte offsets. Veto Ops never
 writes to this file and never signals the failsafe; it only tails it.
 """
 
@@ -107,7 +107,7 @@ class FailsafeAuditReader:
         raising, since the failsafe's kernel enforcement is independent of
         whether its log file happens to exist at read time. The same applies
         if the file exists but cannot be opened for reading (e.g. permission
-        denied) -- Aegis never depends on read access to this log to dispatch
+        denied) -- Veto Ops never depends on read access to this log to dispatch
         approved requests, so a read failure here must never break dispatch.
         If the file has shrunk since ``offset`` was captured (truncation or
         log rotation, including a stale offset that is now beyond the current

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 class Permission(StrEnum):
-    """Permissions available within Aegis."""
+    """Permissions available within Veto Ops."""
 
     VIEW_PENDING = "view_pending"
     VIEW_HISTORY = "view_history"
@@ -22,7 +22,7 @@ class Permission(StrEnum):
 
 
 class UserRole(StrEnum):
-    """Operator roles available within Aegis."""
+    """Operator roles available within Veto Ops."""
 
     VIEWER = "viewer"
     APPROVER = "approver"

@@ -1,6 +1,6 @@
 # Operator Data Model
 
-The `OperatorModel` represents human operators in the Aegis system. It manages operator metadata, authorization credentials, and logs activity patterns.
+The `OperatorModel` represents human operators in the Veto Ops system. It manages operator metadata, authorization credentials, and logs activity patterns.
 
 ## Schema Definition
 
@@ -54,5 +54,5 @@ class OperatorModel(Base):
 
 ## Audit Log Integration
 
-Every execution run and approval action in Aegis is linked back to an operator via the `operator_id` foreign key.
+Every execution run and approval action in Veto Ops is linked back to an operator via the `operator_id` foreign key.
 - **Cascades**: When an operator is deleted, `operator_id` fields on associated `approval_records` and `audit_events` are set to `NULL` (`ondelete="SET NULL"`). This preserves the integrity of the audit history while allowing user records to be safely pruned.

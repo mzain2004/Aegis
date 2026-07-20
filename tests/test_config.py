@@ -1,4 +1,4 @@
-"""Configuration tests for Aegis proxy Phase 1."""
+"""Configuration tests for Veto Ops proxy Phase 1."""
 
 from __future__ import annotations
 

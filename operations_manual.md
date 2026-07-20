@@ -1,10 +1,10 @@
-# Aegis Operations Manual
+# Veto Ops Operations Manual
 
 This guide describes operational maintenance, manual database cleanup triggers, retention rules, and monitoring dashboard management.
 
 ## Scheduled Database Cleanup
 
-The database cleanup scheduler runs inside Aegis to prune old, expired, and completed states. It executes:
+The database cleanup scheduler runs inside Veto Ops to prune old, expired, and completed states. It executes:
 1. **At Startup**: LIFESPAN hook automatically cleans database entries.
 2. **On Interval**: Runs periodically at the configured `interval_seconds` (default: 3600 seconds/1 hour).
 3. **Manual Trigger**: Endpoint `POST /approve/cleanup` allows admins to trigger cleanup on demand.

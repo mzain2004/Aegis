@@ -1,4 +1,4 @@
-"""Comprehensive tests for the full Aegis Human Approval Pipeline.
+"""Comprehensive tests for the full Veto Ops Human Approval Pipeline.
 
 Verifies:
 - Read request bypass (immediate forwarding)

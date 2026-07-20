@@ -1,10 +1,10 @@
-# Aegis Monitoring Design
+# Veto Ops Monitoring Design
 
-This document details the telemetry metrics design, thread-safe buffering, and percentiles statistics tracking for Aegis.
+This document details the telemetry metrics design, thread-safe buffering, and percentiles statistics tracking for Veto Ops.
 
 ## Telemetry Collection Engine
 
-Aegis implements a dual-mode telemetry collection model:
+Veto Ops implements a dual-mode telemetry collection model:
 
 1. **Prometheus Engine**: Collects raw metrics using Prometheus client primitives (`Counter`, `Gauge`, `Histogram`).
 2. **MonitoringService (In-Memory Collector)**: Tracks local statistics with thread-safe buffers. Exposes percentile statistics (Min, Max, Avg, P95, P99) dynamically.

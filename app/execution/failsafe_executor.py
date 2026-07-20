@@ -2,7 +2,7 @@
 
 This wraps an existing transport executor (the ``KubernetesExecutor``) and adds
 no request-time coupling to the kernel failsafe. The failsafe is treated as a
-statically-configured, out-of-band, independent floor: Aegis never reconfigures
+statically-configured, out-of-band, independent floor: Veto Ops never reconfigures
 it, never signals it, and never depends on it being reachable. Instead, around
 each approved dispatch this executor reads the failsafe's audit stream over the
 execution window and reports whether the kernel had to *block* any syscall the
@@ -11,7 +11,7 @@ approved command triggered.
 Correlation is best-effort and cgroup-scoped, not per-request: the failsafe keys
 on cgroup membership, so a block observed in the window is attributed to the
 protected cgroup during that window, not proven to be this exact JSON-RPC call.
-That is an honest tripwire signal ("Aegis approved X; the kernel blocked Y in
+That is an honest tripwire signal ("Veto Ops approved X; the kernel blocked Y in
 the protected cgroup meanwhile"), not a claim of causal precision.
 """
 
@@ -70,7 +70,7 @@ class FailsafeCorrelatingExecutor(ExecutionEngine):
             )
 
         response_headers = dict(result.headers)
-        response_headers["x-aegis-failsafe-blocks"] = str(len(blocks))
+        response_headers["x-veto-failsafe-blocks"] = str(len(blocks))
 
         update: dict[str, object] = {
             "headers": response_headers,

@@ -1,4 +1,4 @@
-"""Application configuration for Aegis.
+"""Application configuration for Veto Ops.
 
 The settings model is intentionally small for Phase 1 and only validates the
 foundation required to bootstrap the service.
@@ -17,7 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Pydantic settings model for the Aegis proxy service."""
+    """Pydantic settings model for the Veto Ops proxy service."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
     environment: str = Field(default="development", validation_alias="ENVIRONMENT")
     database_url: str = Field(
-        default="sqlite:///./aegis.db",
+        default="sqlite:///./veto-ops.db",
         validation_alias="DATABASE_URL",
     )
     auth_enabled: bool = Field(default=True, validation_alias="AUTH_ENABLED")

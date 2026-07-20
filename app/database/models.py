@@ -1,4 +1,4 @@
-"""SQLAlchemy database models for Aegis persistence."""
+"""SQLAlchemy database models for Veto Ops persistence."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class Base(DeclarativeBase):
 
 
 class OperatorModel(Base):
-    """Database record for authenticated operators in Aegis."""
+    """Database record for authenticated operators in Veto Ops."""
 
     __tablename__ = "operators"
 

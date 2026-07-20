@@ -1,4 +1,4 @@
-"""Utility helpers for the Aegis proxy package.
+"""Utility helpers for the Veto Ops proxy package.
 
 This namespace is intentionally small in Phase 1 and exists as a stable place
 for cross-cutting helpers in later phases.

@@ -1,6 +1,6 @@
-# Aegis Authentication and Schema Migration Guide
+# Veto Ops Authentication and Schema Migration Guide
 
-This document outlines the steps required to upgrade existing Aegis database schemas to include operator authentication, role-based access control, and audit references.
+This document outlines the steps required to upgrade existing Veto Ops database schemas to include operator authentication, role-based access control, and audit references.
 
 ## 1. Database Schema Alterations
 
@@ -25,7 +25,7 @@ with op.batch_alter_table("approval_records", schema=None) as batch_op:
 
 ## 2. Running Schema Migrations
 
-To apply schema upgrades to the Aegis database:
+To apply schema upgrades to the Veto Ops database:
 
 ```bash
 # Apply migrations to the head revision
@@ -43,7 +43,7 @@ The migration version identifier is: `9cb22dd7adfe_add_operators_and_auth_relati
 
 ## 3. Database Seeding & Bootstrapping
 
-Aegis includes a self-healing bootstrap seeder to prevent lockout when authentication is first enabled.
+Veto Ops includes a self-healing bootstrap seeder to prevent lockout when authentication is first enabled.
 - **Trigger**: Application startup checks if the `operators` table is empty.
 - **Action**: If empty, a default administrator account is seeded using credentials defined in the application configuration.
 - **Environment Variables**:

@@ -1,4 +1,4 @@
-"""Pydantic models for the Aegis proxy."""
+"""Pydantic models for the Veto Ops proxy."""
 
 from __future__ import annotations
 

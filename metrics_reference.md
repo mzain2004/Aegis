@@ -1,6 +1,6 @@
-# Aegis Metrics Reference
+# Veto Ops Metrics Reference
 
-Below is a complete index of all Prometheus metrics exposed by the Aegis service under the `/metrics` endpoint.
+Below is a complete index of all Prometheus metrics exposed by the Veto Ops service under the `/metrics` endpoint.
 
 ## Metric Catalog
 
@@ -8,7 +8,7 @@ Below is a complete index of all Prometheus metrics exposed by the Aegis service
 
 | Metric Name | Type | Labels | Description |
 |---|---|---|---|
-| `proxy_requests_total` | Counter | `method`, `route` | Total proxy requests received by Aegis. |
+| `proxy_requests_total` | Counter | `method`, `route` | Total proxy requests received by Veto Ops. |
 | `proxy_requests_read` | Counter | None | Total read-only (forward-through) requests. |
 | `proxy_requests_mutating` | Counter | None | Total mutating (suspended) requests. |
 | `proxy_requests_blocked` | Counter | None | Requests blocked due to policy/security checks. |

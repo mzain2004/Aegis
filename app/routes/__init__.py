@@ -1,4 +1,4 @@
-"""Route registration helpers for the Aegis API surface.
+"""Route registration helpers for the Veto Ops API surface.
 
 TODO: expand the router registry when health, approval, and proxy subroutes
 grow beyond the initial skeleton.

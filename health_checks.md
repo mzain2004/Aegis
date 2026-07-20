@@ -1,6 +1,6 @@
-# Aegis Health Checks
+# Veto Ops Health Checks
 
-Aegis provides structured liveness, readiness, and subsystem check endpoints for integration with Kubernetes, Consul, and other container orchestration platforms.
+Veto Ops provides structured liveness, readiness, and subsystem check endpoints for integration with Kubernetes, Consul, and other container orchestration platforms.
 
 ## Endpoint Index
 

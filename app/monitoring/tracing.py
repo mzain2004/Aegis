@@ -1,4 +1,4 @@
-"""OpenTelemetry tracing, Correlation ID management, and TraceMiddleware for Aegis."""
+"""OpenTelemetry tracing, Correlation ID management, and TraceMiddleware for Veto Ops."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ def init_tracer() -> None:
         processor = BatchSpanProcessor(otlp_exporter)
         provider.add_span_processor(processor)
         trace.set_tracer_provider(provider)
-        _tracer = trace.get_tracer("aegis")
+        _tracer = trace.get_tracer("veto-ops")
         LOGGER.info("otel_tracer_initialized_successfully")
     except Exception as e:
         LOGGER.warning("otel_tracer_initialization_failed", error=str(e))

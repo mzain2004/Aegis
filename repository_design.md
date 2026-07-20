@@ -1,9 +1,9 @@
 # Repository & Service Design
 
-This document details the architectural layout of the repository and service layers of the Aegis persistence system.
+This document details the architectural layout of the repository and service layers of the Veto Ops persistence system.
 
 ## Separation of Concerns
-To keep the codebase clean, modular, and maintainable, Aegis enforces a strict separation of concerns:
+To keep the codebase clean, modular, and maintainable, Veto Ops enforces a strict separation of concerns:
 1. **Model Layer (`models.py`)**: Defines ORM representation and database schemas.
 2. **Repository Layer (`repositories.py`)**: Encapsulates raw SQLAlchemy query building, inserts, updates, and deletes. Business logic never enters this layer.
 3. **Service Layer (`services.py`)**: Implements orchestration, transaction boundaries, signature validation, header redactions, audit event logging, and state transitions.

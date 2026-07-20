@@ -100,7 +100,7 @@ def test_delegates_and_reports_zero_blocks_when_log_missing(tmp_path: Path) -> N
 
     assert result.success is True
     assert result.backend == "kubernetes+failsafe"
-    assert result.headers["x-aegis-failsafe-blocks"] == "0"
+    assert result.headers["x-veto-failsafe-blocks"] == "0"
 
 
 def test_reports_block_observed_during_window(tmp_path: Path) -> None:
@@ -122,7 +122,7 @@ def test_reports_block_observed_during_window(tmp_path: Path) -> None:
 
     result = asyncio.run(executor.execute(b"{}", {}))
 
-    assert result.headers["x-aegis-failsafe-blocks"] == "1"
+    assert result.headers["x-veto-failsafe-blocks"] == "1"
     assert result.backend == "kubernetes+failsafe"
     assert result.success is True
 
@@ -149,7 +149,7 @@ def test_cgroup_filter_excludes_other_cgroups(tmp_path: Path) -> None:
 
     result = asyncio.run(executor.execute(b"{}", {}))
 
-    assert result.headers["x-aegis-failsafe-blocks"] == "0"
+    assert result.headers["x-veto-failsafe-blocks"] == "0"
 
 
 def test_fail_on_block_downgrades_result(tmp_path: Path) -> None:
@@ -176,7 +176,7 @@ def test_fail_on_block_downgrades_result(tmp_path: Path) -> None:
 
     assert result.success is False
     assert result.status_code == 502
-    assert result.headers["x-aegis-failsafe-blocks"] == "1"
+    assert result.headers["x-veto-failsafe-blocks"] == "1"
 
 
 def test_executor_read_blocks_permission_denied_logs_warning_not_raise(
@@ -195,7 +195,7 @@ def test_executor_read_blocks_permission_denied_logs_warning_not_raise(
 
     assert result.success is True
     assert result.backend == "kubernetes+failsafe"
-    assert result.headers["x-aegis-failsafe-blocks"] == "0"
+    assert result.headers["x-veto-failsafe-blocks"] == "0"
 
 
 def test_correlating_executor_does_not_double_report_across_sequential_dispatches(
@@ -219,5 +219,5 @@ def test_correlating_executor_does_not_double_report_across_sequential_dispatche
     first_result = asyncio.run(executor.execute(b"{}", {}))
     second_result = asyncio.run(executor.execute(b"{}", {}))
 
-    assert first_result.headers["x-aegis-failsafe-blocks"] == "1"
-    assert second_result.headers["x-aegis-failsafe-blocks"] == "0"
+    assert first_result.headers["x-veto-failsafe-blocks"] == "1"
+    assert second_result.headers["x-veto-failsafe-blocks"] == "0"

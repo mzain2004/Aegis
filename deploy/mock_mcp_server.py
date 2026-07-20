@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal HTTP JSON-RPC MCP stub for free-tier Aegis demos.
+"""Minimal HTTP JSON-RPC MCP stub for free-tier Veto Ops demos.
 
 Not a real Kubernetes server. Enough for smoke-testing proxy classify /
 suspend / approve flows when k3s is not installed on a 1c2g ECS trial box.
