@@ -16,6 +16,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from app.config import Settings
+from app.dependencies import get_execution_engine, get_pending_store, get_settings
 from app.auth_models import OperatorCreate, OperatorSchema, Permission
 from app.config import Settings
 from app.crypto import verify_hmac
@@ -31,9 +33,9 @@ from app.execution.base import ExecutionEngine
 from app.execution.models import ExecutionContext, ExecutionStatus, execution_metrics
 from app.logger import get_logger
 from app.pending_store import PendingRequestStore
+from app.crypto import verify_hmac_sha256
 
 LOGGER = get_logger(__name__)
-
 router = APIRouter(prefix="/approve", tags=["approve"])
 
 
@@ -87,6 +89,16 @@ async def approve_entrypoint(
             content={"message": "nonce is required"},
         )
 
+    signature = payload.get("signature") if isinstance(payload, dict) else None
+    if isinstance(signature, str) and signature.strip():
+        if not verify_hmac_sha256(settings.shared_hmac_secret, nonce, signature):
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"message": "invalid signature"},
+            )
+
+    pending_request = pending_store.get(nonce)
+    if pending_request is None:
     # 1. Validation and Replay Protection Check
     pending_request, error_reason = pending_store.get_if_valid(nonce)
     if error_reason == "expired":
