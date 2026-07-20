@@ -1,4 +1,4 @@
-# Vultr VPS stack (Ubuntu + Docker).
+# Alibaba Cloud ECS stack (Ubuntu + Docker).
 # Usage:
 #   cp deploy/env.example deploy/.env
 #   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
