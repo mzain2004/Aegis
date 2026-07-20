@@ -10,7 +10,7 @@ import pytest
 from agent.bridge import BridgeResult
 from agent.config import AgentSettings
 from agent.loop import (
-    QwenSafeOpsAgent,
+    VetoOpsAgent,
     extract_function_calls,
     parse_function_arguments,
     response_output_text,
@@ -120,7 +120,7 @@ async def test_agent_chains_previous_response_id_and_preserve_thinking() -> None
         ]
     )
 
-    agent = QwenSafeOpsAgent(settings=settings, client=client, bridge=bridge)  # type: ignore[arg-type]
+    agent = VetoOpsAgent(settings=settings, client=client, bridge=bridge)  # type: ignore[arg-type]
     result = await agent.run_incident("CrashLoopBackOff in payments")
 
     assert result.stopped_reason == "completed"
@@ -178,7 +178,7 @@ async def test_agent_records_pending_approval_nonce() -> None:
         ]
     )
 
-    agent = QwenSafeOpsAgent(settings=settings, client=client, bridge=bridge)  # type: ignore[arg-type]
+    agent = VetoOpsAgent(settings=settings, client=client, bridge=bridge)  # type: ignore[arg-type]
     result = await agent.run_incident("Delete attempt demo")
 
     assert result.pending_approvals == ["nonce-xyz"]

@@ -18,7 +18,7 @@ def configure_test_db():
     """Isolate each test to a clean temporary SQLite file database."""
     # Create a unique temporary file path for SQLite
     temp_dir = tempfile.gettempdir()
-    db_file_path = os.path.join(temp_dir, f"test_aegis_{os.getpid()}.db")
+    db_file_path = os.path.join(temp_dir, f"test_veto_ops_{os.getpid()}.db")
     db_url = f"sqlite:///{db_file_path.replace(os.sep, '/')}"
 
     settings = get_settings()

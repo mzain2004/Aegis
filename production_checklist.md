@@ -1,4 +1,4 @@
-# Aegis Production Checklist
+# Veto Ops Production Checklist
 
 Verify the following configurations, security controls, and telemetry endpoints prior to production deployment.
 

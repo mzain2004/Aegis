@@ -1,4 +1,4 @@
-"""Tests for MCP tool configuration aimed at the Aegis proxy."""
+"""Tests for MCP tool configuration aimed at the Veto Ops proxy."""
 
 from __future__ import annotations
 
@@ -6,16 +6,16 @@ import pytest
 
 from agent.config import AgentSettings
 from agent.mcp_config import (
-    AEGIS_MCP_SERVER_LABEL,
+    VETO_MCP_SERVER_LABEL,
     build_remote_mcp_tool,
     resolve_tools_for_mode,
 )
 
 
-def test_build_remote_mcp_tool_points_at_aegis_sse() -> None:
+def test_build_remote_mcp_tool_points_at_veto_sse() -> None:
     settings = AgentSettings(
         DASHSCOPE_API_KEY="sk-test-key-123456",
-        AEGIS_MCP_SSE_URL="https://tunnel.example/sse",
+        VETO_MCP_SSE_URL="https://tunnel.example/sse",
         AGENT_TOOL_MODE="remote_mcp",
     )
 
@@ -23,21 +23,22 @@ def test_build_remote_mcp_tool_points_at_aegis_sse() -> None:
 
     assert tool["type"] == "mcp"
     assert tool["server_protocol"] == "sse"
-    assert tool["server_label"] == AEGIS_MCP_SERVER_LABEL
+    assert tool["server_label"] == VETO_MCP_SERVER_LABEL
     assert tool["server_url"] == "https://tunnel.example/sse"
     assert (
-        "Aegis" in tool["server_description"] or "guard" in tool["server_description"]
+        "guard" in tool["server_description"].lower()
+        or "veto" in tool["server_description"].lower()
     )
 
 
 def test_remote_mcp_requires_sse_url() -> None:
     settings = AgentSettings(
         DASHSCOPE_API_KEY="sk-test-key-123456",
-        AEGIS_MCP_SSE_URL="",
+        VETO_MCP_SSE_URL="",
         AGENT_TOOL_MODE="remote_mcp",
     )
 
-    with pytest.raises(ValueError, match="AEGIS_MCP_SSE_URL"):
+    with pytest.raises(ValueError, match="VETO_MCP_SSE_URL"):
         build_remote_mcp_tool(settings)
 
 

@@ -12,15 +12,15 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Create a non-root user for security hardening
-RUN groupadd -g 10001 aegis && \
-    useradd -r -u 10001 -g aegis -d /app aegis
+RUN groupadd -g 10001 vetoops && \
+    useradd -r -u 10001 -g vetoops -d /app vetoops
 
-COPY --chown=aegis:aegis . .
+COPY --chown=vetoops:vetoops . .
 
 # Persist SQLite (and similar) under /app/data for container volume mounts.
-RUN mkdir -p /app/data && chown -R aegis:aegis /app
+RUN mkdir -p /app/data && chown -R vetoops:vetoops /app
 
-USER aegis
+USER vetoops
 
 EXPOSE 9000
 

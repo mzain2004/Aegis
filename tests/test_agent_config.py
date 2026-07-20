@@ -1,4 +1,4 @@
-"""Tests for Qwen SafeOps agent configuration and client wiring."""
+"""Tests for Veto Ops agent configuration and client wiring."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def test_agent_settings_defaults() -> None:
 
     assert settings.qwen_model == "qwen3.7-max"
     assert settings.qwen_base_url.endswith("/compatible-mode/v1")
-    assert settings.aegis_proxy_url == "http://127.0.0.1:9000"
+    assert settings.veto_proxy_url == "http://127.0.0.1:9000"
     assert settings.tool_mode == "bridge"
     assert settings.preserve_thinking is True
     assert settings.session_cache_enabled is True

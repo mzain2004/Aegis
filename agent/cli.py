@@ -1,4 +1,4 @@
-"""CLI entrypoint for the Qwen SafeOps agent."""
+"""CLI entrypoint for the Veto Ops agent."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ import json
 import sys
 
 from agent.config import get_agent_settings
-from agent.loop import QwenSafeOpsAgent
+from agent.loop import VetoOpsAgent
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the Qwen SafeOps agent against the Aegis MCP execution guard "
+            "Run the Veto Ops agent against the Veto Ops MCP execution guard "
             "using the DashScope Responses API."
         )
     )
@@ -36,7 +36,7 @@ async def _async_main(argv: list[str] | None = None) -> int:
     settings = get_agent_settings()
 
     try:
-        async with QwenSafeOpsAgent(settings=settings) as agent:
+        async with VetoOpsAgent(settings=settings) as agent:
             result = await agent.run_incident(args.alert)
     except ValueError as exc:
         print(f"configuration error: {exc}", file=sys.stderr)
@@ -56,7 +56,7 @@ async def _async_main(argv: list[str] | None = None) -> int:
                     "stopped_reason": result.stopped_reason,
                     "model": settings.qwen_model,
                     "tool_mode": settings.tool_mode,
-                    "aegis_proxy_url": settings.aegis_proxy_url,
+                    "veto_proxy_url": settings.veto_proxy_url,
                 },
                 indent=2,
             )
@@ -65,7 +65,7 @@ async def _async_main(argv: list[str] | None = None) -> int:
         print(result.final_text)
         if result.pending_approvals:
             print(
-                "\nPending Aegis approval nonces: "
+                "\nPending Veto Ops approval nonces: "
                 + ", ".join(result.pending_approvals),
                 file=sys.stderr,
             )

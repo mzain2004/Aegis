@@ -1,4 +1,4 @@
-"""Local HTTP JSON-RPC bridge from the agent to the Aegis proxy."""
+"""Local HTTP JSON-RPC bridge from the agent to the Veto Ops proxy."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from agent.config import AgentSettings, get_agent_settings
 
 @dataclass(frozen=True, slots=True)
 class BridgeResult:
-    """Normalized result of one MCP tools/call through Aegis."""
+    """Normalized result of one MCP tools/call through Veto Ops."""
 
     status_code: int
     body_text: str
@@ -38,19 +38,19 @@ class BridgeResult:
         }
         if self.pending_approval:
             payload["operator_hint"] = (
-                "Mutation suspended by Aegis. Wait for out-of-band human approval; "
+                "Mutation suspended by Veto Ops. Wait for out-of-band human approval; "
                 "do not immediately retry the same mutating call."
             )
         if self.timed_out:
             payload["operator_hint"] = (
-                "Tool call timed out while waiting on Aegis or upstream. Treat as "
+                "Tool call timed out while waiting on Veto Ops or upstream. Treat as "
                 "approval ignore/timeout unless a later approval result arrives."
             )
         return json.dumps(payload, ensure_ascii=True)
 
 
-class AegisMCPBridge:
-    """POST MCP JSON-RPC ``tools/call`` requests to Engineer 1's Aegis proxy."""
+class VetoProxyBridge:
+    """POST MCP JSON-RPC ``tools/call`` requests to Engineer 1's Veto Ops proxy."""
 
     def __init__(
         self,
@@ -61,7 +61,7 @@ class AegisMCPBridge:
         self._client = client
         self._owns_client = client is None
 
-    async def __aenter__(self) -> AegisMCPBridge:
+    async def __aenter__(self) -> VetoProxyBridge:
         if self._client is None:
             self._client = httpx.AsyncClient(
                 timeout=self.settings.mcp_bridge_timeout_seconds
@@ -93,17 +93,17 @@ class AegisMCPBridge:
         tool_name: str,
         arguments: dict[str, Any] | None = None,
     ) -> BridgeResult:
-        """Invoke a tool through Aegis and normalize pending-approval responses."""
+        """Invoke a tool through Veto Ops and normalize pending-approval responses."""
 
         if self._client is None:
             raise RuntimeError(
-                "AegisMCPBridge must be used as an async context manager"
+                "VetoProxyBridge must be used as an async context manager"
             )
 
         body = self._build_tools_call(tool_name, arguments or {})
         try:
             response = await self._client.post(
-                f"{self.settings.aegis_proxy_url}/",
+                f"{self.settings.veto_proxy_url}/",
                 content=body,
                 headers={"content-type": "application/json"},
             )
@@ -115,7 +115,7 @@ class AegisMCPBridge:
                 nonce=None,
                 expires_in=None,
                 timed_out=True,
-                error=f"timeout contacting Aegis proxy: {exc}",
+                error=f"timeout contacting Veto Ops proxy: {exc}",
             )
         except httpx.HTTPError as exc:
             return BridgeResult(
@@ -125,7 +125,7 @@ class AegisMCPBridge:
                 nonce=None,
                 expires_in=None,
                 timed_out=False,
-                error=f"transport error contacting Aegis proxy: {exc}",
+                error=f"transport error contacting Veto Ops proxy: {exc}",
             )
 
         text = response.text

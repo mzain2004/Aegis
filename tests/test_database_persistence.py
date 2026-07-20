@@ -1,4 +1,4 @@
-"""Comprehensive tests for Aegis database persistence layer."""
+"""Comprehensive tests for Veto Ops database persistence layer."""
 
 from __future__ import annotations
 

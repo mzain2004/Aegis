@@ -1,4 +1,4 @@
-"""Aegis application package.
+"""Veto Ops application package.
 
 This package contains the FastAPI application skeleton for Phase 1 of the
 zero-trust MCP execution guard.

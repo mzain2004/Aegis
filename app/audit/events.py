@@ -1,4 +1,4 @@
-"""Structured audit event definitions and emitter for Aegis."""
+"""Structured audit event definitions and emitter for Veto Ops."""
 
 from __future__ import annotations
 

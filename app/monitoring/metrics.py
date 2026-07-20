@@ -1,4 +1,4 @@
-"""Prometheus metrics definition and MonitoringService implementation for Aegis."""
+"""Prometheus metrics definition and MonitoringService implementation for Veto Ops."""
 
 from __future__ import annotations
 

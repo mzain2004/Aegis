@@ -1,4 +1,4 @@
-"""Configuration for the Qwen SafeOps agentic engine."""
+"""Configuration for the Veto Ops agentic engine."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,16 +27,16 @@ class AgentSettings(BaseSettings):
         validation_alias="QWEN_BASE_URL",
     )
     qwen_model: str = Field(default="qwen3.7-max", validation_alias="QWEN_MODEL")
-    aegis_proxy_url: str = Field(
+    veto_proxy_url: str = Field(
         default="http://127.0.0.1:9000",
-        validation_alias="AEGIS_PROXY_URL",
+        validation_alias=AliasChoices("VETO_PROXY_URL", "AEGIS_PROXY_URL"),
     )
-    aegis_mcp_sse_url: str = Field(
+    veto_mcp_sse_url: str = Field(
         default="",
-        validation_alias="AEGIS_MCP_SSE_URL",
+        validation_alias=AliasChoices("VETO_MCP_SSE_URL", "AEGIS_MCP_SSE_URL"),
         description=(
             "Optional public SSE endpoint for native Responses API MCP tools. "
-            "When empty, the agent uses the local HTTP bridge against AEGIS_PROXY_URL."
+            "When empty, the agent uses the local HTTP bridge against VETO_PROXY_URL."
         ),
     )
     tool_mode: Literal["bridge", "remote_mcp"] = Field(
@@ -81,23 +81,23 @@ class AgentSettings(BaseSettings):
             raise ValueError("QWEN_BASE_URL must end with /compatible-mode/v1")
         return normalized
 
-    @field_validator("aegis_proxy_url")
+    @field_validator("veto_proxy_url")
     @classmethod
-    def validate_aegis_proxy_url(cls, value: str) -> str:
+    def validate_veto_proxy_url(cls, value: str) -> str:
         parsed = urlparse(value.strip())
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError("AEGIS_PROXY_URL must be a valid http or https URL")
+            raise ValueError("VETO_PROXY_URL must be a valid http or https URL")
         return value.strip().rstrip("/")
 
-    @field_validator("aegis_mcp_sse_url")
+    @field_validator("veto_mcp_sse_url")
     @classmethod
-    def validate_aegis_mcp_sse_url(cls, value: str) -> str:
+    def validate_veto_mcp_sse_url(cls, value: str) -> str:
         candidate = value.strip()
         if not candidate:
             return ""
         parsed = urlparse(candidate)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError("AEGIS_MCP_SSE_URL must be a valid http or https URL")
+            raise ValueError("VETO_MCP_SSE_URL must be a valid http or https URL")
         return candidate
 
     @field_validator("qwen_model")

@@ -1,4 +1,4 @@
-"""Allow ``python -m agent`` to launch the SafeOps CLI."""
+"""Allow ``python -m agent`` to launch the Veto Ops CLI."""
 
 from __future__ import annotations
 

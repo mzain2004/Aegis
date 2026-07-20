@@ -8,7 +8,7 @@ from typing import Any
 
 from openai import AsyncOpenAI
 
-from agent.bridge import AegisMCPBridge
+from agent.bridge import VetoProxyBridge
 from agent.client import build_extra_body, create_async_openai_client
 from agent.config import AgentSettings, get_agent_settings
 from agent.mcp_config import resolve_tools_for_mode
@@ -113,14 +113,14 @@ def response_output_text(response: Any) -> str:
     return "\n".join(chunks).strip()
 
 
-class QwenSafeOpsAgent:
-    """Single-agent SRE loop over Qwen3.7-Max Responses API + Aegis tools."""
+class VetoOpsAgent:
+    """Single-agent SRE loop over Qwen3.7-Max Responses API + Veto Ops tools."""
 
     def __init__(
         self,
         settings: AgentSettings | None = None,
         client: AsyncOpenAI | None = None,
-        bridge: AegisMCPBridge | None = None,
+        bridge: VetoProxyBridge | None = None,
     ) -> None:
         self.settings = settings or get_agent_settings()
         self._client = client
@@ -128,11 +128,11 @@ class QwenSafeOpsAgent:
         self._owns_client = client is None
         self._owns_bridge = bridge is None
 
-    async def __aenter__(self) -> QwenSafeOpsAgent:
+    async def __aenter__(self) -> VetoOpsAgent:
         if self._client is None:
             self._client = create_async_openai_client(self.settings)
         if self._bridge is None and self.settings.tool_mode == "bridge":
-            self._bridge = AegisMCPBridge(self.settings)
+            self._bridge = VetoProxyBridge(self.settings)
             await self._bridge.__aenter__()
         return self
 
@@ -152,7 +152,7 @@ class QwenSafeOpsAgent:
     ) -> Any:
         if self._client is None:
             raise RuntimeError(
-                "QwenSafeOpsAgent must be used as an async context manager"
+                "VetoOpsAgent must be used as an async context manager"
             )
 
         kwargs: dict[str, Any] = {
@@ -177,7 +177,7 @@ class QwenSafeOpsAgent:
         pending_approvals: list[str],
     ) -> list[dict[str, str]]:
         if self._bridge is None:
-            raise RuntimeError("bridge tool mode requires an AegisMCPBridge")
+            raise RuntimeError("bridge tool mode requires a VetoProxyBridge")
 
         outputs: list[dict[str, str]] = []
         for call in calls:

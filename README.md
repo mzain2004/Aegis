@@ -1,10 +1,10 @@
-# Aegis
+# Veto Ops
 
-## Adaptive Host Immunity
+## Human veto for agent mutations
 
 **A transparent, approval-gated execution proxy for MCP infrastructure tools.**
 
-> **Project status:** functional prototype. Aegis implements request forwarding,
+> **Project status:** functional prototype. Veto Ops implements request forwarding,
 > inspection, classification, suspension, and manual release, but it is not yet
 > production-ready or a complete security boundary.
 
@@ -15,10 +15,10 @@ tools. Direct execution is risky because an incorrect, ambiguous, or compromised
 agent can turn a generated tool call into a high-impact change without an
 independent checkpoint.
 
-Aegis sits between an MCP client and an MCP server. It forwards known read-only
+Veto Ops sits between an MCP client and an MCP server. It forwards known read-only
 and unclassified requests while suspending recognized mutating Kubernetes tool
 calls. Suspended requests receive a stable SHA-256 fingerprint and an expiring
-nonce, then require a separate approval request before Aegis releases the exact
+nonce, then require a separate approval request before Veto Ops releases the exact
 stored bytes to the upstream server.
 
 Human review is the intended control for high-impact actions: an operator should
@@ -32,7 +32,7 @@ as production-grade human authorization.
 
 ## Vision
 
-Aegis is intended to become a secure execution gateway between AI agents and
+Veto Ops is intended to become a secure execution gateway between AI agents and
 high-impact infrastructure. The long-term system will combine explicit approval,
 policy evaluation, authenticated identities, durable audit evidence, and
 isolated execution backends while preserving a clear record of what an agent
@@ -47,7 +47,7 @@ under [Planned Features](#planned-features).
 ```mermaid
 flowchart LR
     Agent[AI Agent] --> Client[MCP Client]
-    Client -->|JSON-RPC over HTTP| Proxy[Aegis Proxy]
+    Client -->|JSON-RPC over HTTP| Proxy[Veto Ops Proxy]
     Proxy --> Parser[JSON-RPC Parser]
     Parser --> Classifier[Classification Engine]
 
@@ -63,8 +63,8 @@ flowchart LR
 
 | Component | Current responsibility |
 | --- | --- |
-| AI Agent / MCP Client | External caller that sends MCP JSON-RPC requests to Aegis. |
-| Aegis Proxy | FastAPI entry point that captures raw request bytes and coordinates classification, forwarding, or suspension. |
+| AI Agent / MCP Client | External caller that sends MCP JSON-RPC requests to Veto Ops. |
+| Veto Ops Proxy | FastAPI entry point that captures raw request bytes and coordinates classification, forwarding, or suspension. |
 | JSON-RPC Parser | Extracts the JSON-RPC version, request ID, method, and `params.name` tool identifier without changing the body. |
 | Classification Engine | Compares tool names with explicit read-only and mutating Kubernetes tool sets. |
 | Pending Request Store | Holds suspended requests, headers, fingerprints, metadata, and expiry times in process memory. |
@@ -76,7 +76,7 @@ flowchart LR
 ### Request flow
 
 1. The MCP client sends a request to `POST /`.
-2. Aegis reads the raw body once and inspects a decoded copy.
+2. Veto Ops reads the raw body once and inspects a decoded copy.
 3. Recognized read-only tools are forwarded immediately.
 4. Recognized mutating tools are fingerprinted, assigned a UUID4 nonce, stored
    with a TTL, and answered with HTTP `202`.
@@ -146,7 +146,7 @@ The following capabilities are future work and are **not implemented**:
 ## Repository Structure
 
 ```text
-Aegis/
+veto-ops/
 ├── app/
 │   ├── execution/              # Execution interface, models, factory, and Kubernetes backend
 │   ├── routes/                 # Proxy and approval HTTP routes
@@ -224,8 +224,8 @@ GitHub Actions is not currently configured.
 - An HTTP-accessible MCP server for end-to-end forwarding
 
 ```bash
-git clone https://github.com/mzain2004/aegis.git Aegis
-cd Aegis
+git clone https://github.com/mzain2004/aegis.git Veto Ops
+cd Veto Ops
 python -m venv .venv
 ```
 
@@ -297,8 +297,8 @@ Create `.env`, build the image, and run the container:
 
 ```bash
 cp .env.example .env
-docker build -t aegis .
-docker run --rm --env-file .env -p 9000:9000 aegis
+docker build -t veto-ops .
+docker run --rm --env-file .env -p 9000:9000 veto-ops
 ```
 
 The container starts Uvicorn on `0.0.0.0:9000`. When the upstream MCP server
@@ -329,7 +329,7 @@ These checks also run automatically in CI on every pull request via
 
 ### Implemented controls
 
-- **Transparent forwarding:** Aegis sends raw request bytes to the upstream MCP
+- **Transparent forwarding:** Veto Ops sends raw request bytes to the upstream MCP
   server and returns raw upstream response bytes. Hop-by-hop response headers
   are excluded from the downstream response.
 - **Immutable stored body:** Inspection operates on a decoded copy; suspended

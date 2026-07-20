@@ -1,4 +1,4 @@
-"""Monitoring and health check routes for Aegis."""
+"""Monitoring and health check routes for Veto Ops."""
 
 from __future__ import annotations
 

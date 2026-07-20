@@ -1,6 +1,6 @@
-# Aegis Final Acceptance Validation Report
+# Veto Ops Final Acceptance Validation Report
 
-This report presents the final end-to-end acceptance review of Aegis under integration and security verification rules.
+This report presents the final end-to-end acceptance review of Veto Ops under integration and security verification rules.
 
 ---
 
@@ -16,7 +16,7 @@ This report presents the final end-to-end acceptance review of Aegis under integ
   - pytest: `8.4.2`
   - OpenAI SDK: `1.60.2`
   - prometheus-client: `0.21.1`
-- **Database**: SQLite (local `aegis.db` file) utilizing SQLAlchemy ORM mapping.
+- **Database**: SQLite (local `veto-ops.db` file) utilizing SQLAlchemy ORM mapping.
 - **Docker & Kubernetes clusters (Kind/Minikube)**: **NOT AVAILABLE** on this host (Docker Desktop engine and local minikube/kind toolchains are not running).
 - **BPF-LSM Kernel Audit Engine**: **NOT AVAILABLE** (requires Linux kernels 5.7+).
 

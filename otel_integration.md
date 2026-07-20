@@ -1,6 +1,6 @@
-# Aegis OpenTelemetry Integration
+# Veto Ops OpenTelemetry Integration
 
-Aegis is equipped with optional OpenTelemetry tracing instrumentation, supporting distributed trace propagation across the proxy pipeline.
+Veto Ops is equipped with optional OpenTelemetry tracing instrumentation, supporting distributed trace propagation across the proxy pipeline.
 
 ## Settings Configuration
 
@@ -19,7 +19,7 @@ with start_span("http_request", attributes=span_attrs):
 
 ## Graceful Fallback Mechanics
 
-Aegis implements an import-safety block when OpenTelemetry dependencies are not installed in the target host:
+Veto Ops implements an import-safety block when OpenTelemetry dependencies are not installed in the target host:
 
 ```python
 OTEL_AVAILABLE = False

@@ -1,4 +1,4 @@
-"""Root endpoint tests for Phase 1 Aegis proxy."""
+"""Root endpoint tests for Phase 1 Veto Ops proxy."""
 
 from __future__ import annotations
 
@@ -14,6 +14,6 @@ def test_root_returns_service_metadata() -> None:
 
     assert response.status_code == 200
     json = response.json()
-    assert json["service"] == "Aegis Proxy"
+    assert json["service"] == "Veto Ops Proxy"
     assert json["version"] == "0.1.0"
     assert json["status"] == "running"

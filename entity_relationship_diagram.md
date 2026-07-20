@@ -1,6 +1,6 @@
 # Entity Relationship Diagram
 
-This document contains the Entity Relationship (ER) diagram for the Aegis persistence layer.
+This document contains the Entity Relationship (ER) diagram for the Veto Ops persistence layer.
 
 ```mermaid
 erDiagram

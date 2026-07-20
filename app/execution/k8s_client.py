@@ -54,7 +54,7 @@ class KubernetesClientManager:
     2. Otherwise falls back to the local ``~/.kube/config``.
 
     All configuration is delegated to the official ``kubernetes`` library;
-    no credentials are ever handled directly by Aegis.
+    no credentials are ever handled directly by Veto Ops.
     """
 
     def __init__(

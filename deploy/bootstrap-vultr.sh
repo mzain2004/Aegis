@@ -49,7 +49,7 @@ for _ in $(seq 1 30); do
     fi
     echo "  3) Edit deploy/.env secrets (SHARED_HMAC_SECRET, admin key, DASHSCOPE_API_KEY)"
     echo "  4) Restart: docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d"
-    echo "  5) Agent on the VPS: AEGIS_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
+    echo "  5) Agent on the VPS: VETO_PROXY_URL=http://127.0.0.1:9000 python -m agent --alert 'demo'"
     exit 0
   fi
   sleep 2

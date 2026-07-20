@@ -1,6 +1,6 @@
 # Database Architecture
 
-This document describes the design of the database persistence layer for **Aegis**.
+This document describes the design of the database persistence layer for **Veto Ops**.
 
 ## Technology Stack
 - **ORM**: SQLAlchemy 2.x using fully annotated PEP-597 declarative mapping models (`Mapped[...]` and `mapped_column()`).

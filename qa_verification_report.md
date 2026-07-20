@@ -1,13 +1,13 @@
-# Aegis QA & Runtime Verification Report
+# Veto Ops QA & Runtime Verification Report
 
-This report documents the final runtime, integration, and security verification of the Aegis zero-trust MCP proxy.
+This report documents the final runtime, integration, and security verification of the Veto Ops zero-trust MCP proxy.
 
 ---
 
 ## 1. Runtime & Startup Status
 
 - **Uvicorn Startup**: **PASSED**. FastAPI initialized successfully without import or dependency errors.
-- **Database Initialization**: **PASSED**. SQLAlchemy engine bootstrapped `aegis.db`, ran migrations to head version `9cb22dd7adfe`, and successfully executed database bootstrap seeding (admin operator created).
+- **Database Initialization**: **PASSED**. SQLAlchemy engine bootstrapped `veto-ops.db`, ran migrations to head version `9cb22dd7adfe`, and successfully executed database bootstrap seeding (admin operator created).
 - **Startup Hooks**: **PASSED**. Periodic cleanup scheduler started and triggered initial database purging hooks.
 
 ---

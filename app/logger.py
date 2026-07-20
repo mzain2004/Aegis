@@ -1,4 +1,4 @@
-"""Structured logging configuration for the Aegis proxy.
+"""Structured logging configuration for the Veto Ops proxy.
 
 This module configures JSON logs through structlog so later phases can add
 security and request context without changing the logging surface.

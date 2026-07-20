@@ -1,4 +1,4 @@
-"""FastAPI application entrypoint for Aegis.
+"""FastAPI application entrypoint for Veto Ops.
 
 Phase 1 provides the application shell, settings, structured logging, router
 registration, and health endpoints only.
@@ -31,8 +31,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Manage startup and shutdown hooks for the service."""
 
     LOGGER.info(
-        "aegis_starting",
-        service="Aegis Proxy",
+        "veto_ops_starting",
+        service="Veto Ops Proxy",
         version=__version__,
         environment=settings.environment,
         host=settings.proxy_host,
@@ -63,11 +63,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
     # Stop background cleanup scheduler on shutdown
     await cleanup_scheduler.stop()
-    LOGGER.info("aegis_stopping", service="Aegis Proxy", version=__version__)
+    LOGGER.info("veto_ops_stopping", service="Veto Ops Proxy", version=__version__)
 
 
 app = FastAPI(
-    title="Aegis Proxy",
+    title="Veto Ops Proxy",
     version=__version__,
     description="Phase 1 foundation for a zero-trust MCP execution guard.",
     docs_url="/docs",
@@ -89,7 +89,7 @@ async def root() -> dict[str, str]:
 
     LOGGER.debug("root_endpoint_invoked")
     return {
-        "service": "Aegis Proxy",
+        "service": "Veto Ops Proxy",
         "version": __version__,
         "status": "running",
     }

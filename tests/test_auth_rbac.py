@@ -1,4 +1,4 @@
-"""Comprehensive tests for Aegis Authentication and Role-Based Access Control (RBAC)."""
+"""Comprehensive tests for Veto Ops Authentication and Role-Based Access Control (RBAC)."""
 
 from __future__ import annotations
 
@@ -87,7 +87,7 @@ def populated_operators(auth_test_db: Session) -> dict[str, str]:
         OperatorCreate(
             username="viewer",
             display_name="Test Viewer",
-            email="viewer@aegis.local",
+            email="viewer@veto-ops.local",
             role=UserRole.VIEWER,
             active=True,
             api_key="viewer.api-key-1",
@@ -99,7 +99,7 @@ def populated_operators(auth_test_db: Session) -> dict[str, str]:
         OperatorCreate(
             username="approver",
             display_name="Test Approver",
-            email="approver@aegis.local",
+            email="approver@veto-ops.local",
             role=UserRole.APPROVER,
             active=True,
             api_key="approver.api-key-2",
@@ -111,7 +111,7 @@ def populated_operators(auth_test_db: Session) -> dict[str, str]:
         OperatorCreate(
             username="admin",
             display_name="Test Admin",
-            email="admin@aegis.local",
+            email="admin@veto-ops.local",
             role=UserRole.ADMINISTRATOR,
             active=True,
             api_key="admin.api-key-3",
@@ -123,7 +123,7 @@ def populated_operators(auth_test_db: Session) -> dict[str, str]:
         OperatorCreate(
             username="disabled_admin",
             display_name="Disabled Admin",
-            email="disabled@aegis.local",
+            email="disabled@veto-ops.local",
             role=UserRole.ADMINISTRATOR,
             active=False,
             api_key="disabled.api-key-4",
@@ -163,7 +163,7 @@ def test_operator_crud(auth_test_db: Session) -> None:
     model = OperatorModel(
         username="john",
         display_name="John Doe",
-        email="john@aegis.local",
+        email="john@veto-ops.local",
         api_key_hash=hash_api_key("john.key"),
         role="viewer",
         active=True,
@@ -367,7 +367,7 @@ def test_rbac_admin_permissions(
         new_op = {
             "username": "newop",
             "display_name": "New Operator",
-            "email": "new@aegis.local",
+            "email": "new@veto-ops.local",
             "role": "approver",
             "active": True,
             "api_key": "newop.key123",

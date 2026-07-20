@@ -22,7 +22,7 @@ def bootstrap_database(db: Session) -> None:
         admin_create = OperatorCreate(
             username=settings.default_admin_username,
             display_name="Default Administrator",
-            email="admin@aegis.local",
+            email="admin@veto-ops.local",
             role=UserRole.ADMINISTRATOR,
             active=True,
             api_key=settings.default_admin_apikey,

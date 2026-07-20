@@ -1,10 +1,10 @@
 # Role-Based Access Control (RBAC) Design
 
-Aegis enforces a strict Role-Based Access Control (RBAC) model to govern operator actions. Every request that goes through the approval router is evaluated against the authenticated operator's role and associated permission set.
+Veto Ops enforces a strict Role-Based Access Control (RBAC) model to govern operator actions. Every request that goes through the approval router is evaluated against the authenticated operator's role and associated permission set.
 
 ## Roles and Permissions Matrix
 
-Aegis defines three distinct operator roles: `viewer`, `approver`, and `administrator`.
+Veto Ops defines three distinct operator roles: `viewer`, `approver`, and `administrator`.
 
 | Permission | Description | Viewer | Approver | Administrator |
 | :--- | :--- | :---: | :---: | :---: |

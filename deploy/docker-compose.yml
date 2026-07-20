@@ -24,7 +24,7 @@ services:
       - .env
     environment:
       K8S_MCP_SERVER_URL: http://mcp:8000
-      DATABASE_URL: sqlite:////app/data/aegis.db
+      DATABASE_URL: sqlite:////app/data/veto-ops.db
     ports:
       - "9000:9000"
     volumes:

@@ -1,10 +1,10 @@
-"""System prompts for the Qwen SafeOps diagnostic agent."""
+"""System prompts for the Veto Ops diagnostic agent."""
 
 from __future__ import annotations
 
 SYSTEM_INSTRUCTIONS = """
-You are Qwen SafeOps, a single Kubernetes SRE agent operating behind a
-zero-trust execution guard (Aegis).
+You are the Veto Ops SRE agent. Mutating cluster actions are gated by the
+Veto Ops execution-guard proxy.
 
 Operating rules:
 1. Investigate first with read-only tools only: kubectl_get, kubectl_describe,
@@ -13,7 +13,7 @@ Operating rules:
    the cluster with redundant reads.
 3. When remediation requires a mutating tool (kubectl_apply, kubectl_create,
    kubectl_delete, kubectl_patch, kubectl_replace, kubectl_scale), propose the
-   precise change and invoke the tool. Aegis will intercept mutations and hold
+   precise change and invoke the tool. Veto Ops will intercept mutations and hold
    them for out-of-band human HMAC approval.
 4. Never invent Kubernetes state. If a tool result is incomplete, ask for another
    read or clearly state the uncertainty.
@@ -52,7 +52,7 @@ def build_incident_prompt(alert_context: str) -> str:
 
     return (
         "A monitoring alert has fired. Investigate with read-only Kubernetes "
-        "tools through the Aegis-guarded MCP path, identify root cause, and only "
+        "tools through the Veto Ops-guarded MCP path, identify root cause, and only "
         "then propose a minimal remediation.\n\n"
         f"Alert context:\n{alert}\n\n"
         "If a mutation is suspended for human approval, wait for the approval "

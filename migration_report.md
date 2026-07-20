@@ -3,7 +3,7 @@
 This document reports on the database migration layout, configuration, and rollback strategies.
 
 ## Migration Tooling
-Aegis uses **Alembic** for schema migrations. Alembic is configured to run programmatically or via CLI, using a dynamically resolved database connection string sourced directly from the application's configuration module.
+Veto Ops uses **Alembic** for schema migrations. Alembic is configured to run programmatically or via CLI, using a dynamically resolved database connection string sourced directly from the application's configuration module.
 
 - **Config Path**: `alembic.ini`
 - **Migration Scripts Directory**: `alembic/versions/`
